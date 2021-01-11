@@ -3,7 +3,13 @@ guid: 76afab1153cde8e46a1bf8afc41f8118
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - SelectedLevel: {instanceID: 0}
+  - SantasSpawnArea: {instanceID: 0}
+  - BefanasSpawnArea: {instanceID: 0}
+  - GiftsSpawnArea: {instanceID: 0}
+  - PlaygroundArea: {instanceID: 0}
+  - HousesParent: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 public class MouseInputController : MonoBehaviour
 {
     public GameObject RayIntersectorPlane;
-    public SantaBehaviour SelectedSanta;
+    public Santa SelectedSanta;
 
     private bool _appendInstructionInQueue;
     private float _yOffset;
@@ -46,17 +46,16 @@ public class MouseInputController : MonoBehaviour
 
     public void OnMouseLeftDown(InputAction.CallbackContext context)
     {
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Santa", "Target")))
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Santa", "Befana", "Target")))
         {
-            Debug.Log(hit.collider.gameObject);
             // Show info of the selected object.
-            hit.transform.GetComponent<ISelectable>().Selected();
+            hit.transform.GetComponent<SelectableElementBase>().UpdateInfoInPanel();
 
             // If the selected object is a Santa, then update the SelectedSanta and activate the Intersector plane,
             // else set the SelectedSanta to null and deactivate the Intersector plane. 
-            if (hit.transform.GetComponent<SantaBehaviour>() != null)
+            if (hit.transform.GetComponent<Santa>() != null)
             {
-                SelectedSanta = hit.transform.GetComponent<SantaBehaviour>();
+                SelectedSanta = hit.transform.GetComponent<Santa>();
             }
             else
             {
@@ -66,6 +65,7 @@ public class MouseInputController : MonoBehaviour
         // If the user has selected nothing, set the SelectedSanta to null and deactivate the Intersector plane. 
         else
         {
+            ElementDetailsPanel.Instance.HidePanel();
             SelectedSanta = null;
         }
     }

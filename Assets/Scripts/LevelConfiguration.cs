@@ -8,11 +8,15 @@ public class LevelConfiguration : ScriptableObject
     public int NumberOfHouses;
     public int NumberOfGifts;
     public int NumberOfSantas;
-    public float SantasMinSpeed;
-    public float SantasMaxSpeed;
+    public int SantasMinSpeed;
+    public int SantasMaxSpeed;
     public int NumberOfBefanas;
-    public float BefanasMinSpeed;
-    public float BefanasMaxSpeed;
+    public int BefanasMinSpeed;
+    public int BefanasMaxSpeed;
+    public int BefanasMinActionDuration;
+    public int BefanasMaxActionDuration;
+    public int BefanasMinFOVRadius;
+    public int BefanasMaxFOVRadius;
     public int GiftsToDeliver;
     public int Time;
 
