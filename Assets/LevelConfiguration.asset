@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96daf97c58414bf458bb280c2fa95096, type: 3}
+  m_Name: LevelConfiguration
+  m_EditorClassIdentifier: 
+  NumberOfHouses: 5
+  NumberOfGifts: 10
+  NumberOfSantas: 3
+  SantasMinSpeed: 1
+  SantasMaxSpeed: 3
+  NumberOfBefanas: 3
+  BefanasMinSpeed: 1
+  BefanasMaxSpeed: 3
+  GiftsToDeliver: 5
+  Time: 5
+  SantaPrefab: {fileID: 6693856074189137691, guid: 4d3c4a539d4ab104ca880b7b1bad9d81, type: 3}
+  BefanaPrefab: {fileID: 5155714823862478468, guid: 7fe6ddd872653cc459dfe04ca193913d, type: 3}
+  GiftPrefab: {fileID: 2341037405693897985, guid: a6304178dcf7da74cb2830678899b5d7, type: 3}
