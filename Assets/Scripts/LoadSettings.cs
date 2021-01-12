@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class LoadManager : MonoBehaviour
+public class LoadSettings : MonoBehaviour
 {
     public LevelConfiguration SelectedLevel { get; set; }
 
-    public static LoadManager Instance
+    public static LoadSettings Instance
     {
         get;
         private set;

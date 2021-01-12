@@ -21,10 +21,11 @@ public class Santa : SelectableElementBase
 
     public GameObject NextTarget { get; set; }
     public List<Gift> CollectedGifts { get; set; }
+    public Vector3 Origin { get => _instructionsQueue.Count > 0 ? _instructionsQueue[_instructionsQueue.Count - 1].Key : (_currentPath != null ? _currentPath.transform.position : transform.position); }
 
     void Awake()
     {
-        _initialSpeed = Random.Range(LoadManager.Instance.SelectedLevel.SantasMinSpeed, LoadManager.Instance.SelectedLevel.SantasMaxSpeed);
+        _initialSpeed = Random.Range(LoadSettings.Instance.SelectedLevel.SantasMinSpeed, LoadSettings.Instance.SelectedLevel.SantasMaxSpeed);
         _speed = _initialSpeed;
        
         CollectedGifts = new List<Gift>();
@@ -64,22 +65,30 @@ public class Santa : SelectableElementBase
         // Add the action in the queue.
         _instructionsQueue.Add(new KeyValuePair<Vector3, UnityAction>(targetPosition, action));
 
-        // Create a line indicating the path of this action.
-        LineRenderer lineRenderer = PathVisualFeedback.GetComponent<LineRenderer>();
-        lineRenderer.startColor = Color.black;
-        lineRenderer.endColor = Color.black;
-        lineRenderer.startWidth = 0.01f;
-        lineRenderer.endWidth = 0.01f;
-        lineRenderer.positionCount = 2;
-        lineRenderer.useWorldSpace = true;
+        //// Create a line indicating the path of this action.
+        //LineRenderer lineRenderer = PathVisualFeedback.GetComponent<LineRenderer>();
+        //lineRenderer.startColor = Color.black;
+        //lineRenderer.endColor = Color.black;
+        //lineRenderer.startWidth = 0.01f;
+        //lineRenderer.endWidth = 0.01f;
+        //lineRenderer.positionCount = 2;
+        //lineRenderer.useWorldSpace = true;
 
-        // Starting point of the line.
-        lineRenderer.SetPosition(0, _instructionsQueue.Count > 0 ? _instructionsQueue[_instructionsQueue.Count - 1].Key : (_currentPath != null ? _currentPath.transform.position : transform.position));
-        // Ending point of the line.
-        lineRenderer.SetPosition(1, targetPosition);
+        //// Starting point of the line.
+        //lineRenderer.SetPosition(0, _instructionsQueue.Count > 0 ? _instructionsQueue[_instructionsQueue.Count - 1].Key : (_currentPath != null ? _currentPath.transform.position : transform.position));
+        //// Ending point of the line.
+        //lineRenderer.SetPosition(1, targetPosition);
 
-        // Instantiate the line renderer.
-        _pathList.Add(Instantiate(PathVisualFeedback, targetPosition, PathVisualFeedback.transform.rotation));
+        //// Instantiate the line renderer.
+        //_pathList.Add(Instantiate(PathVisualFeedback, targetPosition, PathVisualFeedback.transform.rotation));
+
+        GameObject visualFeedback = Instantiate(PathVisualFeedback);
+        _pathList.Add(visualFeedback);
+
+        Vector3 origin = Origin;
+ 
+        visualFeedback.GetComponent<VisualFeedbackDrawer>().DrawPath(origin, targetPosition);
+        visualFeedback.GetComponent<VisualFeedbackDrawer>().DrawDestination(targetPosition);
     }
 
     public void ExecuteAction(GameObject target = null)

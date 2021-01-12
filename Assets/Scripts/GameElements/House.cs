@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEngine;
 
-public class House : SelectableElementBase, ITarget
+public class House : SelectableElementBase
 {
     public List<Gift> RequestedGifts { get; set; }
     public string HouseAddress { get; set; }

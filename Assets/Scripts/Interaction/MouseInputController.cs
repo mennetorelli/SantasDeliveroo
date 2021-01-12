@@ -6,11 +6,12 @@ using UnityEngine.InputSystem;
 public class MouseInputController : MonoBehaviour
 {
     public GameObject RayIntersectorPlane;
-    public Santa SelectedSanta;
-
+    public VisualFeedbackDrawer FeedbackDrawer;
+    
     private bool _appendInstructionInQueue;
     private float _yOffset;
-    private LineRenderer _lineRenderer;
+
+    public Santa SelectedSanta { get; set; }
 
     private bool _moveStantaModeEnabled;
     private bool MoveStantaModeEnabled 
@@ -24,12 +25,6 @@ public class MouseInputController : MonoBehaviour
         } 
     }
 
-    void Awake()
-    {
-        _lineRenderer = RayIntersectorPlane.GetComponent<LineRenderer>();
-    }
-
-
     void Update()
     {
         if (MoveStantaModeEnabled && SelectedSanta != null)
@@ -38,8 +33,7 @@ public class MouseInputController : MonoBehaviour
 
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("RayIntersectorPlane")))
             {
-                _lineRenderer.SetPosition(0, SelectedSanta.transform.position);
-                _lineRenderer.SetPosition(1, new Vector3(hit.point.x, hit.point.y + _yOffset, hit.point.z));
+                FeedbackDrawer.DrawPath(SelectedSanta.Origin, new Vector3(hit.point.x, hit.point.y + _yOffset, hit.point.z));
             }
         }
     }
@@ -108,7 +102,7 @@ public class MouseInputController : MonoBehaviour
         _appendInstructionInQueue = context.ReadValue<float>() > 0;
     }
 
-    public void OnMKeyPressed(InputAction.CallbackContext context)
+    public void OnShiftKeyPressed(InputAction.CallbackContext context)
     {
         if (SelectedSanta != null)
         {

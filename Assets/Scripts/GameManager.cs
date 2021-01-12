@@ -42,17 +42,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
     // Start is called before the first frame update
     void Start()
     {
-        LevelConfiguration level = LoadManager.Instance.SelectedLevel;
+        LevelConfiguration level = LoadSettings.Instance.SelectedLevel;
 
         // Selection of random houses from the map.
         System.Random rnd = new System.Random();
         List<House> selectedHouses = HousesParent.GetComponentsInChildren<House>()
             .OrderBy(_ => rnd.Next())
-            .Take(LoadManager.Instance.SelectedLevel.NumberOfHouses)
+            .Take(LoadSettings.Instance.SelectedLevel.NumberOfHouses)
             .ToList();
 
         foreach (House house in selectedHouses)
@@ -149,6 +148,7 @@ public class GameManager : MonoBehaviour
     public void DecreaseGiftsCounter(int deliveredGifts) 
     {
         _giftsToDeliverCounter -= deliveredGifts;
+        GameInfoPanel.Instance.UpdateGifts(_giftsToDeliverCounter);
         if (_giftsToDeliverCounter == 0)
         {
             Popup.Instance.ActivatePopup(
@@ -163,7 +163,7 @@ public class GameManager : MonoBehaviour
     public void DecreaseSantasCounter()
     {
         _remainingSantasCounter--;
-        if (_giftsToDeliverCounter == 0)
+        if (_remainingSantasCounter == 0)
         {
             Popup.Instance.ActivatePopup(
                 message: "Oh no! All the Santas have been chased by the Befanas!",

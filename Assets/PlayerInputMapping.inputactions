@@ -6,10 +6,18 @@
             "id": "45bf48cd-521e-4caf-b7c3-668e332d8736",
             "actions": [
                 {
-                    "name": "Camera_Move",
+                    "name": "Camera_Move_WASD",
                     "type": "Value",
                     "id": "71d29146-8ab1-41df-b9b8-68c1283988f7",
                     "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Camera_Move_QE",
+                    "type": "Value",
+                    "id": "88e509c8-116d-4b43-aab7-5a67f8905762",
+                    "expectedControlType": "Axis",
                     "processors": "",
                     "interactions": ""
                 },
@@ -86,7 +94,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Camera_Move",
+                    "action": "Camera_Move_WASD",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -97,7 +105,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Camera_Move",
+                    "action": "Camera_Move_WASD",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -108,7 +116,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Camera_Move",
+                    "action": "Camera_Move_WASD",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -119,7 +127,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Camera_Move",
+                    "action": "Camera_Move_WASD",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -130,7 +138,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Camera_Move",
+                    "action": "Camera_Move_WASD",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -141,7 +149,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Camera_Move",
+                    "action": "Camera_Move_WASD",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -152,7 +160,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Camera_Move",
+                    "action": "Camera_Move_WASD",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -163,7 +171,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Camera_Move",
+                    "action": "Camera_Move_WASD",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -174,7 +182,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Camera_Move",
+                    "action": "Camera_Move_WASD",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -185,7 +193,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Camera_Move",
+                    "action": "Camera_Move_WASD",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -247,7 +255,7 @@
                 {
                     "name": "",
                     "id": "66bccb60-a138-40a2-8d7f-21355ea9cb1f",
-                    "path": "<Keyboard>/m",
+                    "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -276,6 +284,61 @@
                     "action": "Santa_Actions_Overwrite",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "QE",
+                    "id": "46667783-c338-483f-ab31-6cfc20072d6f",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Camera_Move_QE",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "up",
+                    "id": "fb128444-6a83-4bbd-9cdc-4e2c32409634",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Camera_Move_QE",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "down",
+                    "id": "ad13b23a-1d7e-4093-9e93-8343530677f5",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Camera_Move_QE",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "24c3fd42-f865-4f58-affe-39adc19d0648",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Camera_Move_QE",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "98fe354d-2386-4b61-81a6-6efd6122cf70",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Camera_Move_QE",
+                    "isComposite": false,
+                    "isPartOfComposite": true
                 }
             ]
         }

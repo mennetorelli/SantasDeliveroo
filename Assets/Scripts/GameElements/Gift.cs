@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Gift : SelectableElementBase, ITarget
+public class Gift : SelectableElementBase
 {
     public List<Color> Colors;
 
@@ -14,7 +14,7 @@ public class Gift : SelectableElementBase, ITarget
     void Awake()
     {
         // Assignment of random color to the material.
-        GetComponent<Renderer>().material.color = Colors[Random.Range(0, Colors.Count - 1)];
+        transform.GetChild(0).GetComponent<Renderer>().material.color = Colors[Random.Range(0, Colors.Count - 1)];
 
         // Assignment of a gift id, composed of color and random number
         Id = new string(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890", 10)

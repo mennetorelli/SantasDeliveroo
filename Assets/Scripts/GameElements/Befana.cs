@@ -16,7 +16,7 @@ public class Befana : SelectableElementBase
     void Awake()
     {
         // Initialize parameters according to level configuration.
-        LevelConfiguration selectedLevel = LoadManager.Instance.SelectedLevel;
+        LevelConfiguration selectedLevel = LoadSettings.Instance.SelectedLevel;
         _speed = UnityEngine.Random.Range(selectedLevel.BefanasMinSpeed, selectedLevel.BefanasMaxSpeed);
         _actionDuration = UnityEngine.Random.Range(selectedLevel.BefanasMinActionDuration, selectedLevel.BefanasMaxActionDuration);
         _fovRadius = UnityEngine.Random.Range(selectedLevel.BefanasMinFOVRadius, selectedLevel.BefanasMaxFOVRadius);

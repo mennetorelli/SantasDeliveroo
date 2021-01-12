@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7888357250149967364}
   - component: {fileID: 3319337971893442363}
   - component: {fileID: 2695560277023518629}
+  - component: {fileID: 3949320354055437758}
   m_Layer: 0
   m_Name: PathVisualFeedback
   m_TagString: Untagged
@@ -48,7 +49,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1219418107276800036}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -123,8 +124,8 @@ LineRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Positions:
-  - {x: 8.601059, y: 3.6000004, z: 46.39742}
-  - {x: 8.601059, y: 3.6000004, z: 46.39742}
+  - {x: -3.9050546, y: 4.1524177, z: -5.3401475}
+  - {x: -3.9050546, y: 4.1524177, z: -5.3401475}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 1
@@ -189,3 +190,19 @@ LineRenderer:
     generateLightingData: 0
   m_UseWorldSpace: 1
   m_Loop: 0
+--- !u!114 &3949320354055437758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219418107276800036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bad6aff18cd88ae40b917ecdbae2069d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  StartWidth: 0.1
+  EndWidth: 0.1
+  VertexNumber: 100
+  Radius: 0.2
