@@ -6,35 +6,37 @@ using UnityEngine.InputSystem;
 public class MouseInputController : MonoBehaviour
 {
     public GameObject RayIntersectorPlane;
-    public VisualFeedbackDrawer FeedbackDrawer;
-    
-    private bool _appendInstructionInQueue;
+
+    private PathRenderer _feedbackDrawer;
+
+    private bool _appendActionInQueue;
+    private bool _moveSantaModeEnabled;
     private float _yOffset;
 
-    public Santa SelectedSanta { get; set; }
+    public SelectableElementBase SelectedElement { get; set; }
 
-    private bool _moveStantaModeEnabled;
-    private bool MoveStantaModeEnabled 
-    { 
-        get => _moveStantaModeEnabled; 
-        set 
-        {
-            _moveStantaModeEnabled = value;
-            RayIntersectorPlane.SetActive(value);
-            _yOffset = 0;
-        } 
+    void Awake()
+    {
+        _feedbackDrawer = RayIntersectorPlane.GetComponentInChildren<PathRenderer>();
     }
 
     void Update()
     {
-        if (MoveStantaModeEnabled && SelectedSanta != null)
+        if (_moveSantaModeEnabled && SelectedElement != null && SelectedElement.GetType() == typeof(Santa))
         {
-            RayIntersectorPlane.transform.position = new Vector3(RayIntersectorPlane.transform.position.x, SelectedSanta.transform.position.y, RayIntersectorPlane.transform.position.z);
+            Santa selectedSanta = (Santa)SelectedElement;
 
+            RayIntersectorPlane.SetActive(true);
+            RayIntersectorPlane.transform.position = new Vector3(RayIntersectorPlane.transform.position.x, selectedSanta.transform.position.y, RayIntersectorPlane.transform.position.z);
+            
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("RayIntersectorPlane")))
             {
-                FeedbackDrawer.DrawPath(SelectedSanta.Origin, new Vector3(hit.point.x, hit.point.y + _yOffset, hit.point.z));
+                _feedbackDrawer.DrawPath(selectedSanta.Origin, new Vector3(hit.point.x, hit.point.y + _yOffset, hit.point.z));
             }
+        }
+        else
+        {
+            RayIntersectorPlane.SetActive(false);
         }
     }
 
@@ -42,51 +44,61 @@ public class MouseInputController : MonoBehaviour
     {
         if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Santa", "Befana", "Target")))
         {
-            // Show info of the selected object.
-            hit.transform.GetComponent<SelectableElementBase>().UpdateInfoInPanel();
+            SelectableElementBase selectedElement = hit.transform.GetComponent<SelectableElementBase>();
+            
+            // If the user is not selecting the same element, instruct the current element it has been selected,
+            // save a reference of the selected element and update the element details panel.
+            if (selectedElement != SelectedElement)
+            {
+                // If we changed selected element, the previous one is no longer selected.
+                if (SelectedElement != null)
+                {
+                    SelectedElement.Deselected();
+                }
 
-            // If the selected object is a Santa, then update the SelectedSanta and activate the Intersector plane,
-            // else set the SelectedSanta to null and deactivate the Intersector plane. 
-            if (hit.transform.GetComponent<Santa>() != null)
-            {
-                SelectedSanta = hit.transform.GetComponent<Santa>();
-            }
-            else
-            {
-                SelectedSanta = null;
+                selectedElement.Selected();
+                SelectedElement = selectedElement;
+                ElementDetailsPanel.Instance.ShowPanel();
             }
         }
-        // If the user has selected nothing, set the SelectedSanta to null and deactivate the Intersector plane. 
+        // If the user has selected nothing, set the SelectedElement to null and deactivate the Intersector plane. 
         else
         {
+            if (SelectedElement != null)
+            {
+                SelectedElement.Deselected();
+            }
+
             ElementDetailsPanel.Instance.HidePanel();
-            SelectedSanta = null;
+            SelectedElement = null;
         }
     }
 
     public void OnMouseRightDown(InputAction.CallbackContext context)
     {
-        if (SelectedSanta != null)
+        if (SelectedElement != null && SelectedElement.GetType() == typeof(Santa))
         {
-            if (!MoveStantaModeEnabled)
+            Santa selectedSanta = (Santa)SelectedElement;
+            if (!_moveSantaModeEnabled)
             {
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Target")))
                 {
-                    SelectedSanta.AddActionToQueue(
+                    selectedSanta.AddActionToQueue(
                         new Vector3(hit.transform.position.x, hit.transform.position.y + hit.collider.bounds.extents.y, hit.transform.position.z), 
-                        () => SelectedSanta.ExecuteAction(hit.collider.gameObject),
-                        _appendInstructionInQueue);
+                        () => selectedSanta.ExecuteAction(hit.collider.gameObject),
+                        _appendActionInQueue);
                 }
             }
             else
             {
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("RayIntersectorPlane")))
                 {
-                    SelectedSanta.AddActionToQueue(new Vector3(hit.point.x, hit.point.y + _yOffset, hit.point.z), () => SelectedSanta.ExecuteAction(), _appendInstructionInQueue);
-                    MoveStantaModeEnabled = false;
+                    selectedSanta.AddActionToQueue(
+                        new Vector3(hit.point.x, hit.point.y + _yOffset, hit.point.z), 
+                        () => selectedSanta.ExecuteAction(), 
+                        _appendActionInQueue);
                 }
             }
-            
         }
     }
 
@@ -99,15 +111,13 @@ public class MouseInputController : MonoBehaviour
 
     public void OnCtrlKeyPressed(InputAction.CallbackContext context)
     {
-        _appendInstructionInQueue = context.ReadValue<float>() > 0;
+        _appendActionInQueue = context.ReadValue<float>() > 0;
     }
 
     public void OnShiftKeyPressed(InputAction.CallbackContext context)
     {
-        if (SelectedSanta != null)
-        {
-            MoveStantaModeEnabled = !MoveStantaModeEnabled;
-        }
+        _moveSantaModeEnabled = context.ReadValue<float>() > 0;
+        _yOffset = 0;
     }
 
 }

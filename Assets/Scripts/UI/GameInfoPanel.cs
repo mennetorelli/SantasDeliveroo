@@ -35,7 +35,7 @@ public class GameInfoPanel : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Level.text = $"{ Level.text } { LoadSettings.Instance.SelectedLevel.Time }";
+        Level.text = $"{ Level.text } { LoadSettings.Instance.SelectedLevel.Id }";
         Timer.StartTimer(LoadSettings.Instance.SelectedLevel.Time);
         _giftsText = Gifts.text;
         _cameraModeText = CameraMode.text;

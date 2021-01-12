@@ -10,6 +10,9 @@ public class ElementDetailsPanel : MonoBehaviour
     public Transform ElementDetailsContainer;
     public Transform IconTransform;
 
+    [Tooltip("MouseInputManagerReference. Needed to keep track of the selected element.")]
+    public MouseInputController MouseInputManager;
+
     private Image _icon;
 
     public static ElementDetailsPanel Instance
@@ -35,27 +38,38 @@ public class ElementDetailsPanel : MonoBehaviour
     }
 
 
-    public void ShowPanel(Sprite icon, List<string> properties)
+    public void ShowPanel()
     {
         gameObject.SetActive(true);
-        for (int i = 0; i < ElementDetailsContainer.childCount; i++)
+        UpdatePanel();
+    }
+
+    public void UpdatePanel()
+    {
+        if (gameObject.activeSelf)
         {
-            Destroy(ElementDetailsContainer.GetChild(i).gameObject);
-        }
-        _icon.sprite = icon;
-        foreach (var item in properties)
-        {
-            GameObject component = Instantiate(ElementDetailsPrefab, ElementDetailsContainer.transform);
-            component.GetComponent<ElementDetailsFiller>().Fill(item);
+            ResetPanel();
+
+            _icon.sprite = MouseInputManager.SelectedElement.Icon;
+            foreach (var item in MouseInputManager.SelectedElement.FormatDetails())
+            {
+                GameObject component = Instantiate(ElementDetailsPrefab, ElementDetailsContainer.transform);
+                component.GetComponent<ElementDetailsFiller>().Fill(item);
+            }
         }
     }
 
     public void HidePanel()
     {
+        ResetPanel();
+        gameObject.SetActive(false);
+    }
+
+    void ResetPanel()
+    {
         for (int i = 0; i < ElementDetailsContainer.childCount; i++)
         {
             Destroy(ElementDetailsContainer.GetChild(i).gameObject);
         }
-        gameObject.SetActive(false);
     }
 }

@@ -13,15 +13,15 @@ public class Santa : SelectableElementBase
     
     private readonly List<KeyValuePair<Vector3, UnityAction>> _instructionsQueue = new List<KeyValuePair<Vector3, UnityAction>>();
     private readonly List<GameObject> _pathList = new List<GameObject>();
-    private KeyValuePair<Vector3, UnityAction> _currentInstruction;
-    private GameObject _currentPath;
 
     private double _speed;
-    private int _initialSpeed;
+    private double _initialSpeed;
+
+    private bool _isExecuting;
 
     public GameObject NextTarget { get; set; }
     public List<Gift> CollectedGifts { get; set; }
-    public Vector3 Origin { get => _instructionsQueue.Count > 0 ? _instructionsQueue[_instructionsQueue.Count - 1].Key : (_currentPath != null ? _currentPath.transform.position : transform.position); }
+    public Vector3 Origin { get => _instructionsQueue.Count > 0 ? _instructionsQueue[_instructionsQueue.Count - 1].Key : (_pathList.Count > 0 ? _pathList[0].transform.position : transform.position); }
 
     void Awake()
     {
@@ -34,74 +34,66 @@ public class Santa : SelectableElementBase
     void Update()
     {
         // If there are instrucions to execute, do it.
-        if (_currentInstruction.Value == null && _instructionsQueue.Count > 0)
+        if (!_isExecuting && _instructionsQueue.Count > 0)
         {
-            // Referencing the first instruction and path of the lists.
-            _currentInstruction = _instructionsQueue[0];
-            _currentPath = _pathList[0];
-            _currentPath.GetComponent<Renderer>().material.color = Color.green;
-
-            // Removing the first instruction and path from the lists.
-            _instructionsQueue.Remove(_currentInstruction);
-            _pathList.Remove(_currentPath);
-
-            // Invoking the current UnityEvent.
-            _currentInstruction.Value.Invoke();
+            _isExecuting = true;
+            _instructionsQueue[0].Value.Invoke();
         }
     }
 
     public void AddActionToQueue(Vector3 targetPosition, UnityAction action, bool appendInstruction)
     {
-        if (!appendInstruction)
+        if (!appendInstruction && _instructionsQueue.Count > 0)
         {
-            _instructionsQueue.Clear();
-            foreach (GameObject path in _pathList)
+            _instructionsQueue.RemoveRange(1, _instructionsQueue.Count - 1);
+            for (int i = 0; i < _pathList.Count - 1; i++)
             {
-                Destroy(path);
+                Destroy(_pathList[i + 1]);
             }
-            _pathList.Clear();
+            _pathList.RemoveRange(1, _pathList.Count - 1);
         }
 
         // Add the action in the queue.
         _instructionsQueue.Add(new KeyValuePair<Vector3, UnityAction>(targetPosition, action));
 
-        //// Create a line indicating the path of this action.
-        //LineRenderer lineRenderer = PathVisualFeedback.GetComponent<LineRenderer>();
-        //lineRenderer.startColor = Color.black;
-        //lineRenderer.endColor = Color.black;
-        //lineRenderer.startWidth = 0.01f;
-        //lineRenderer.endWidth = 0.01f;
-        //lineRenderer.positionCount = 2;
-        //lineRenderer.useWorldSpace = true;
-
-        //// Starting point of the line.
-        //lineRenderer.SetPosition(0, _instructionsQueue.Count > 0 ? _instructionsQueue[_instructionsQueue.Count - 1].Key : (_currentPath != null ? _currentPath.transform.position : transform.position));
-        //// Ending point of the line.
-        //lineRenderer.SetPosition(1, targetPosition);
-
-        //// Instantiate the line renderer.
-        //_pathList.Add(Instantiate(PathVisualFeedback, targetPosition, PathVisualFeedback.transform.rotation));
-
-        GameObject visualFeedback = Instantiate(PathVisualFeedback);
+        // Instantiate a step of the path and adds it to the list.
+        GameObject visualFeedback = Instantiate(PathVisualFeedback, targetPosition, transform.rotation, transform);
         _pathList.Add(visualFeedback);
+        
+        Vector3 origin = new Vector3();
+        if (_pathList.Count == 0)
+        {
+            origin = transform.position;
+        }
+        if (_pathList.Count == 1)
+        {
+            origin = _pathList[0].transform.position;
+        }
+        if (_pathList.Count > 2)
+        {
+            origin = appendInstruction ? _pathList[_pathList.Count - 2].transform.position : _pathList[0].transform.position;
+        }
 
-        Vector3 origin = Origin;
- 
-        visualFeedback.GetComponent<VisualFeedbackDrawer>().DrawPath(origin, targetPosition);
-        visualFeedback.GetComponent<VisualFeedbackDrawer>().DrawDestination(targetPosition);
+        PathRenderer visualFeedbackDrawer = visualFeedback.GetComponent<PathRenderer>();
+        visualFeedbackDrawer.DrawPath(origin, targetPosition);
+        visualFeedbackDrawer.DrawDestination(targetPosition);
     }
 
     public void ExecuteAction(GameObject target = null)
     {
         NextTarget = target;
+        foreach (Renderer path in _pathList[0].transform.GetComponentsInChildren<Renderer>())
+        {
+            path.material.color = target != null ? Color.cyan : Color.green;
+        }
         Vector3 origin = new Vector3(transform.position.x, transform.position.y, transform.position.z);
-        transform.rotation = Quaternion.LookRotation(_currentInstruction.Key);
-        StartCoroutine(MoveSanta(origin, _currentInstruction.Key));
+        transform.rotation = Quaternion.LookRotation(_instructionsQueue[0].Key);
+        StartCoroutine(MoveSanta(origin, _instructionsQueue[0].Key));
     }
 
     IEnumerator MoveSanta(Vector3 origin, Vector3 destination)
     {
-        float step = (float)((_speed / (origin - destination).magnitude) * Time.fixedDeltaTime);
+        float step = (float)((_speed / (origin - destination).magnitude)* Time.fixedDeltaTime);
         float currentStep = 0;
         while (currentStep <= 1.0f)
         {
@@ -110,25 +102,17 @@ public class Santa : SelectableElementBase
             // Move objectToMove closer to destination.
             transform.position = Vector3.Lerp(origin, destination, currentStep);
             // Leave the routine and return here in the next frame.
-            yield return new WaitForFixedUpdate();         
+            yield return new WaitForFixedUpdate();
         }
         transform.position = destination;
-        Destroy(_currentPath);
-        // To set the next path to green.
-        _currentPath = null;
-        _currentInstruction = new KeyValuePair<Vector3, UnityAction>();
+
+        _instructionsQueue.Remove(_instructionsQueue[0]);
+        Destroy(_pathList[0]);
+        _pathList.Remove(_pathList[0]);
+        _isExecuting = false;
     }
 
-    //void OnTriggerEnter(Collider other)
-    //{
-    //    if (other.gameObject.GetComponent<BefanaBehaviour>())
-    //    {
-    //        StartCoroutine(Deactivate());
-    //        StartCoroutine(other.gameObject.GetComponent<BefanaBehaviour>().Deactivate());
-    //    }
-    //}
-
-    IEnumerator Deactivate()
+    public IEnumerator Deactivate()
     {
         float ratio = 0;
         float duration = 1f;
@@ -147,10 +131,11 @@ public class Santa : SelectableElementBase
 
     public void UpdateSpeed()
     {
-        _speed -= _initialSpeed / 2 / CollectedGifts.Count;
+        double step = _initialSpeed / 2 / SleighCapacity;
+        _speed = _initialSpeed - (step * CollectedGifts.Count);
     }
 
-    public override void UpdateInfoInPanel()
+    public override List<string> FormatDetails()
     {
         List<string> elementProperties = new List<string>()
         {
@@ -161,6 +146,24 @@ public class Santa : SelectableElementBase
         {
             elementProperties.Add($"Gift in sleigh: { gift.Id }");
         }
-        ElementDetailsPanel.Instance.ShowPanel(Icon, elementProperties);
+        return elementProperties;
+    }
+
+    public override void Selected()
+    {
+        foreach (GameObject path in _pathList)
+        {
+            Debug.Log("seleziono" + path);
+            path.SetActive(true);
+        }
+    }
+
+    public override void Deselected()
+    {
+        foreach (GameObject path in _pathList)
+        {
+            Debug.Log("deseleziono"+path);
+            path.SetActive(false);
+        }
     }
 }

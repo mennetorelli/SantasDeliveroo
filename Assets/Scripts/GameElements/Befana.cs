@@ -8,7 +8,7 @@ public class Befana : SelectableElementBase
     private int _speed;
     private int _actionDuration;
     private int _fovRadius;
-    private int _maxDistance = 5;
+    private int _maxDistance = 10;
 
     private Transform _detectedSanta;
     private Vector3 _randomPosition;
@@ -19,7 +19,7 @@ public class Befana : SelectableElementBase
         LevelConfiguration selectedLevel = LoadSettings.Instance.SelectedLevel;
         _speed = UnityEngine.Random.Range(selectedLevel.BefanasMinSpeed, selectedLevel.BefanasMaxSpeed);
         _actionDuration = UnityEngine.Random.Range(selectedLevel.BefanasMinActionDuration, selectedLevel.BefanasMaxActionDuration);
-        _fovRadius = UnityEngine.Random.Range(selectedLevel.BefanasMinFOVRadius, selectedLevel.BefanasMaxFOVRadius);
+        _fovRadius = 100;//UnityEngine.Random.Range(selectedLevel.BefanasMinFOVRadius, selectedLevel.BefanasMaxFOVRadius);
         
         // Set the FOV radius of the Befana.
         GetComponent<SphereCollider>().radius = _fovRadius;
@@ -36,6 +36,12 @@ public class Befana : SelectableElementBase
         {
             transform.rotation = Quaternion.LookRotation(_detectedSanta.position);
             transform.position = Vector3.MoveTowards(transform.position, _detectedSanta.position, _speed * Time.deltaTime);
+
+            if (Vector3.Distance(transform.position, _detectedSanta.position) < 1.1f)
+            {
+                StartCoroutine(Deactivate());
+                StartCoroutine(_detectedSanta.GetComponent<Santa>().Deactivate());
+            }
         }
         else
         {
@@ -88,13 +94,22 @@ public class Befana : SelectableElementBase
         gameObject.SetActive(false);
     }
 
-    public override void UpdateInfoInPanel()
+    public override List<string> FormatDetails()
     {
-        List<string> elementProperties = new List<string>()
+        return  new List<string>()
         {
             $"Speed: { _speed }",
             $"FOV radius: { _fovRadius }"
         };
-        ElementDetailsPanel.Instance.ShowPanel(Icon, elementProperties);
+    }
+
+    public override void Selected()
+    {
+        Debug.Log("Nothing to override");
+    }
+
+    public override void Deselected()
+    {
+        Debug.Log("Nothing to override");
     }
 }

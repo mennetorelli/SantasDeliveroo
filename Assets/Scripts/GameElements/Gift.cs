@@ -30,8 +30,8 @@ public class Gift : SelectableElementBase
             {
                 currentSanta.CollectedGifts.Add(this);
                 currentSanta.UpdateSpeed();
-                currentSanta.UpdateInfoInPanel();
-                gameObject.SetActive(false);
+                StartCoroutine(Deactivate());
+                ElementDetailsPanel.Instance.UpdatePanel();
                 MessagePanel.Instance.ShowMessage($"Gift collected! Gift's destination: {DestinationHouse.HouseAddress}", Color.black);
             }
             else
@@ -41,13 +41,39 @@ public class Gift : SelectableElementBase
         }
     }
 
-    public override void UpdateInfoInPanel()
+    public IEnumerator Deactivate()
     {
-        List<string> elementProperties = new List<string>()
+        float ratio = 0;
+        float duration = 1f;
+        float startTime = Time.time;
+        Vector3 initialScaleValue = transform.localScale;
+        while (ratio < 1)
+        {
+            // update the ratio value at every frame
+            ratio = (Time.time - startTime) / duration;
+            // apply the new scale
+            transform.localScale = Vector3.Lerp(initialScaleValue, Vector3.zero, ratio);
+            yield return new WaitForEndOfFrame();
+        }
+        gameObject.SetActive(false);
+    }
+
+    public override List<string> FormatDetails()
+    {
+        return new List<string>()
         {
             $"ID: {Id}",
             $"Destination house: {DestinationHouse.HouseAddress}"
         };
-        ElementDetailsPanel.Instance.ShowPanel(Icon, elementProperties);
+    }
+
+    public override void Selected()
+    {
+        DestinationHouse.Highlight = true;
+    }
+
+    public override void Deselected()
+    {
+        DestinationHouse.Highlight = false;
     }
 }

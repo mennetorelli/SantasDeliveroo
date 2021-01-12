@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "LevelConfiguration", menuName = "ScriptableObjects/ScriptableObjectScriptableObject", order = 1)]
 public class LevelConfiguration : ScriptableObject
 {
+    public int Id;
     public int NumberOfHouses;
     public int NumberOfGifts;
     public int NumberOfSantas;

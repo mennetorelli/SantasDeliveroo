@@ -49,10 +49,11 @@ public class Popup : MonoBehaviour
     /// <param name="secondaryButtonText">The text of the secondary button.</param>
     /// <param name="primaryCallback">The UnityAction invoked when clicking on the primary button.</param>
     /// <param name="secondaryCallback">The UnityAction invoked when clicking on the secondary button.</param>
-    public void ActivatePopup(string message, string primaryButtonText = null, string secondaryButtonText = null, UnityAction primaryCallback = null, UnityAction secondaryCallback = null)
+    public void ActivatePopup(string message, bool secondaryButtonEnabled = false, string primaryButtonText = null, string secondaryButtonText = null, UnityAction primaryCallback = null, UnityAction secondaryCallback = null)
     {
         // Update the menu properties.
         Message.text = message;
+        SecondaryButton.gameObject.SetActive(secondaryButtonEnabled);
         PrimaryButtonText.text = primaryButtonText;
         SecondaryButtonText.text = secondaryButtonText;
         PrimaryButton.onClick.AddListener(primaryCallback);

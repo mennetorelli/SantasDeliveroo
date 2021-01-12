@@ -11,7 +11,17 @@ public abstract class SelectableElementBase : MonoBehaviour
     public Sprite Icon;
 
     /// <summary>
-    /// Triggers when user selects a selectable element with the mouse.
+    /// Triggers when user selects the element with the mouse.
     /// </summary>
-    public abstract void UpdateInfoInPanel();
+    public abstract void Selected();
+
+    /// <summary>
+    /// Triggers when has deselected the element.
+    /// </summary>
+    public abstract void Deselected();
+
+    /// <summary>
+    /// Triggers when has deselected the element.
+    /// </summary>
+    public abstract List<string> FormatDetails();
 }

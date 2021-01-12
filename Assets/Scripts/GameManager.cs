@@ -8,7 +8,6 @@ public class GameManager : MonoBehaviour
 {
     public Collider SantasSpawnArea;
     public Collider BefanasSpawnArea;
-    public Collider GiftsSpawnArea;
     public Collider PlaygroundArea;
 
     public GameObject EndGamePopup;
@@ -22,6 +21,8 @@ public class GameManager : MonoBehaviour
     public float MinHeight { get; set; }
     public float MaxHeight { get; set; }
     public float MaxRangeXZ { get; set; }
+
+    public List<Santa> AvailableSantas { get; set; }
 
     public static GameManager Instance
     {
@@ -68,13 +69,14 @@ public class GameManager : MonoBehaviour
         float santasSpawnAreaMinZ = santasSpawnAreaOrigin.z - SantasSpawnArea.bounds.extents.z;
         float santasSpawnAreaMaxZ = santasSpawnAreaOrigin.z + SantasSpawnArea.bounds.extents.z;
 
+        AvailableSantas = new List<Santa>();
         for (int i = 0; i < level.NumberOfSantas; i++)
         {
             Vector3 randomPosition = new Vector3(Random.Range(santasSpawnAreaMinX, santasSpawnAreaMaxX),
                 Random.Range(santasSpawnAreaMinY, santasSpawnAreaMaxY),
                 Random.Range(santasSpawnAreaMinZ, santasSpawnAreaMaxZ));
 
-            Instantiate(level.SantaPrefab, randomPosition, level.SantaPrefab.transform.rotation);
+            AvailableSantas.Add(Instantiate(level.SantaPrefab, randomPosition, level.SantaPrefab.transform.rotation).GetComponent<Santa>());
         }
 
         // Spawn the Befanas inside their spawn area.
@@ -96,13 +98,13 @@ public class GameManager : MonoBehaviour
         }
 
         // Spawn the gifts inside their spawn area.
-        Vector3 giftsSpawnAreaOrigin = GiftsSpawnArea.bounds.center;
-        float giftsSpawnAreaMinX = giftsSpawnAreaOrigin.x - GiftsSpawnArea.bounds.extents.x;
-        float giftsSpawnAreaMaxX = giftsSpawnAreaOrigin.x + GiftsSpawnArea.bounds.extents.x;
-        float giftsSpawnAreaMinY = giftsSpawnAreaOrigin.y - GiftsSpawnArea.bounds.extents.y;
-        float giftsSpawnAreaMaxY = giftsSpawnAreaOrigin.y + GiftsSpawnArea.bounds.extents.y;
-        float giftsSpawnAreaMinZ = giftsSpawnAreaOrigin.z - GiftsSpawnArea.bounds.extents.z;
-        float giftsSpawnAreaMaxZ = giftsSpawnAreaOrigin.z + GiftsSpawnArea.bounds.extents.z;
+        Vector3 giftsSpawnAreaOrigin = PlaygroundArea.bounds.center;
+        float giftsSpawnAreaMinX = giftsSpawnAreaOrigin.x - PlaygroundArea.bounds.extents.x;
+        float giftsSpawnAreaMaxX = giftsSpawnAreaOrigin.x + PlaygroundArea.bounds.extents.x;
+        float giftsSpawnAreaMinY = giftsSpawnAreaOrigin.y - PlaygroundArea.bounds.extents.y;
+        float giftsSpawnAreaMaxY = giftsSpawnAreaOrigin.y + PlaygroundArea.bounds.extents.y;
+        float giftsSpawnAreaMinZ = giftsSpawnAreaOrigin.z - PlaygroundArea.bounds.extents.z;
+        float giftsSpawnAreaMaxZ = giftsSpawnAreaOrigin.z + PlaygroundArea.bounds.extents.z;
 
         List<Gift> instantiatedGifts = new List<Gift>();
         for (int i = 0; i < level.NumberOfGifts; i++)
@@ -111,7 +113,9 @@ public class GameManager : MonoBehaviour
                 Random.Range(giftsSpawnAreaMinY, giftsSpawnAreaMaxY),
                 Random.Range(giftsSpawnAreaMinZ, giftsSpawnAreaMaxZ));
 
-            instantiatedGifts.Add(Instantiate(level.GiftPrefab, randomPosition, level.GiftPrefab.transform.rotation).GetComponent<Gift>());
+            Gift gift = Instantiate(level.GiftPrefab, randomPosition, level.GiftPrefab.transform.rotation).GetComponent<Gift>();
+            instantiatedGifts.Add(gift);
+            gift.Id = $"{ i + 1 }";
         }
 
         // Assign each gift to one house.
@@ -128,7 +132,9 @@ public class GameManager : MonoBehaviour
         MinHeight = PlayGroundAreaOrigin.y - PlaygroundArea.bounds.extents.y;
         MaxHeight = PlayGroundAreaOrigin.y + PlaygroundArea.bounds.extents.y;
 
+        // Initialize the other settings of the level.
         _timeLeft = level.Time;
+        _giftsToDeliverCounter = level.GiftsToDeliver;
     }
 
     void Update()
@@ -138,10 +144,11 @@ public class GameManager : MonoBehaviour
         {
             Popup.Instance.ActivatePopup(
                 message: "Oh no! Time's out!",
+                secondaryButtonEnabled: true,
                 primaryButtonText: "Menu",
                 secondaryButtonText: "Try again",
                 primaryCallback: () => SceneManager.LoadScene("MenuScene"),
-                secondaryCallback: () => SceneManager.LoadScene("MenuScene"));
+                secondaryCallback: () => SceneManager.LoadScene("GameScene")); 
         }
     }
 
@@ -154,9 +161,7 @@ public class GameManager : MonoBehaviour
             Popup.Instance.ActivatePopup(
                 message: "Congratulations! You helped the santas to deliver all the gifts!",
                 primaryButtonText: "Menu",
-                secondaryButtonText: "Next level!",
-                primaryCallback: () => SceneManager.LoadScene("MenuScene"),
-                secondaryCallback: () => SceneManager.LoadScene("MenuScene"));
+                primaryCallback: () => SceneManager.LoadScene("MenuScene"));
         }
     }
 
@@ -166,7 +171,8 @@ public class GameManager : MonoBehaviour
         if (_remainingSantasCounter == 0)
         {
             Popup.Instance.ActivatePopup(
-                message: "Oh no! All the Santas have been chased by the Befanas!",
+                message: "Oh no! All the Santas have been chased by the Befanas!", 
+                secondaryButtonEnabled: true,
                 primaryButtonText: "Menu",
                 secondaryButtonText: "Try again",
                 primaryCallback: () => SceneManager.LoadScene("MenuScene"),

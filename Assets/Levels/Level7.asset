@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 96daf97c58414bf458bb280c2fa95096, type: 3}
-  m_Name: Level1
+  m_Name: Level7
   m_EditorClassIdentifier: 
-  Id: 1
+  Id: 7
   NumberOfHouses: 5
   NumberOfGifts: 10
   NumberOfSantas: 3
@@ -25,8 +25,8 @@ MonoBehaviour:
   BefanasMaxActionDuration: 4
   BefanasMinFOVRadius: 2
   BefanasMaxFOVRadius: 4
-  GiftsToDeliver: 5
-  Time: 180
+  GiftsToDeliver: 10
+  Time: 60
   SantaPrefab: {fileID: 5151170794676270279, guid: 939408041fc4075479daed63e89873a3, type: 3}
   BefanaPrefab: {fileID: 5155714823862478468, guid: 7fe6ddd872653cc459dfe04ca193913d, type: 3}
   GiftPrefab: {fileID: 4337478193464926883, guid: 5547acfcb3f51bf4aa0ad8bb0155ce66, type: 3}
