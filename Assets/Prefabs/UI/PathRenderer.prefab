@@ -177,7 +177,7 @@ MonoBehaviour:
   StartWidth: 0.1
   EndWidth: 0.1
   VertexNumber: 100
-  Radius: 0.2
+  Radius: 0.5
   LineRenderer: {fileID: 7425178038451588550}
   CircleRenderer: {fileID: 151156880042911612}
 --- !u!1 &3220629871737495620

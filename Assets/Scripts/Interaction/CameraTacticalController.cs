@@ -1,8 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// Handles the tactical view camera.
+/// </summary>
 public class CameraTacticalController : MonoBehaviour
 {
     [Header("Configurable Properties")]
@@ -43,6 +44,9 @@ public class CameraTacticalController : MonoBehaviour
     {
         // Set the move target position based on the move delta y value. Must be done here as there's no logic for the input system to calculate holding down an input
         _moveTarget += transform.up * _moveDeltaY * Time.deltaTime * MoveSpeed;
+
+        // Clamp y values of _moveTarget so that the camera doesn't go below the floor or too high.
+        _moveTarget.y = Mathf.Clamp(_moveTarget.y, -10, 5);
 
         // Lerp the camera rig to a new move target position
         transform.position = Vector3.Lerp(transform.position, _moveTarget, Time.deltaTime * InternalMoveSpeed);

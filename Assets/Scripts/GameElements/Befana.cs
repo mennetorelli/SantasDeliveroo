@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Befana : SelectableElementBase
 {
+    [Tooltip("The collider representing the detection range of the Befana.")]
+    public SphereCollider DetectionRange;
+
     private int _speed;
     private int _actionDuration;
-    private int _fovRadius;
     private int _maxDistance = 10;
 
     private Transform _detectedSanta;
@@ -17,12 +18,9 @@ public class Befana : SelectableElementBase
     {
         // Initialize parameters according to level configuration.
         LevelConfiguration selectedLevel = LoadSettings.Instance.SelectedLevel;
-        _speed = UnityEngine.Random.Range(selectedLevel.BefanasMinSpeed, selectedLevel.BefanasMaxSpeed);
-        _actionDuration = UnityEngine.Random.Range(selectedLevel.BefanasMinActionDuration, selectedLevel.BefanasMaxActionDuration);
-        _fovRadius = 100;//UnityEngine.Random.Range(selectedLevel.BefanasMinFOVRadius, selectedLevel.BefanasMaxFOVRadius);
-        
-        // Set the FOV radius of the Befana.
-        GetComponent<SphereCollider>().radius = _fovRadius;
+        _speed = Random.Range(selectedLevel.BefanasMinSpeed, selectedLevel.BefanasMaxSpeed);
+        _actionDuration = Random.Range(selectedLevel.BefanasMinActionDuration, selectedLevel.BefanasMaxActionDuration);
+        DetectionRange.radius = Random.Range(selectedLevel.BefanasMinDetectionRange, selectedLevel.BefanasMaxDetectionRange);
 
         // Update Befana's random action every _actionDuration seconds.
         InvokeRepeating(nameof(UpdateRandomPosition), 0, _actionDuration);
@@ -34,22 +32,34 @@ public class Befana : SelectableElementBase
     {
         if (_detectedSanta != null)
         {
+            Highlight.SetActive(true);
+
             transform.rotation = Quaternion.LookRotation(_detectedSanta.position);
             transform.position = Vector3.MoveTowards(transform.position, _detectedSanta.position, _speed * Time.deltaTime);
 
-            if (Vector3.Distance(transform.position, _detectedSanta.position) < 1.1f)
+            // If the Befana has come quite near the Santa, deactivate both of them.
+            // Used this instead of a OnTriggerEnter to not interfere with the collider of the detection range
+            if (Vector3.Distance(transform.position, _detectedSanta.position) < 0.5f)
             {
-                StartCoroutine(Deactivate());
                 StartCoroutine(_detectedSanta.GetComponent<Santa>().Deactivate());
+                StartCoroutine(Deactivate());
+
+                // Set _detectedSanta = null to not enter again in the if condition and avoid starting again the coroutines.
+                _detectedSanta = null;
             }
         }
         else
         {
+            Highlight.SetActive(false);
+
             transform.rotation = Quaternion.LookRotation(_randomPosition);
             transform.position = Vector3.MoveTowards(transform.position, _randomPosition, _speed * Time.deltaTime);
         }
     }
 
+    /// <summary>
+    /// Generates a new random position used for the free movements of the Befana.
+    /// </summary>
     void UpdateRandomPosition()
     {
         _randomPosition = new Vector3(
@@ -94,22 +104,12 @@ public class Befana : SelectableElementBase
         gameObject.SetActive(false);
     }
 
-    public override List<string> FormatDetails()
+    public override List<string> FormatProperties()
     {
-        return  new List<string>()
+        return new List<string>()
         {
-            $"Speed: { _speed }",
-            $"FOV radius: { _fovRadius }"
+            $"Speed: { _speed } m/s",
+            $"Detection range: { DetectionRange.radius } m"
         };
-    }
-
-    public override void Selected()
-    {
-        Debug.Log("Nothing to override");
-    }
-
-    public override void Deselected()
-    {
-        Debug.Log("Nothing to override");
     }
 }

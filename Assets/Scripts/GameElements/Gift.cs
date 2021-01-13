@@ -10,6 +10,8 @@ public class Gift : SelectableElementBase
     public string Id { get; set; }
     public House DestinationHouse { get; set; }
 
+    public Santa CollectedBySanta { get; set; }
+
 
     void Awake()
     {
@@ -24,10 +26,12 @@ public class Gift : SelectableElementBase
     void OnTriggerEnter(Collider other)
     {
         Santa currentSanta = other.GetComponent<Santa>();
+        // If the colliding Santa is aiming to collect this gift, i.e. it is not an accidental collision.
         if (currentSanta != null && currentSanta.NextTarget == gameObject)
         {
             if (currentSanta.CollectedGifts.Count < currentSanta.SleighCapacity)
             {
+                CollectedBySanta = currentSanta;
                 currentSanta.CollectedGifts.Add(this);
                 currentSanta.UpdateSpeed();
                 StartCoroutine(Deactivate());
@@ -58,7 +62,7 @@ public class Gift : SelectableElementBase
         gameObject.SetActive(false);
     }
 
-    public override List<string> FormatDetails()
+    public override List<string> FormatProperties()
     {
         return new List<string>()
         {
@@ -67,13 +71,15 @@ public class Gift : SelectableElementBase
         };
     }
 
-    public override void Selected()
+    public override void OnSelect()
     {
-        DestinationHouse.Highlight = true;
+        base.OnSelect();
+        DestinationHouse.Highlight.SetActive(true);
     }
 
-    public override void Deselected()
+    public override void OnDeselect()
     {
-        DestinationHouse.Highlight = false;
+        base.OnDeselect();
+        DestinationHouse.Highlight.SetActive(false);
     }
 }

@@ -1,12 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
 /// <summary>
-/// Class that handles popup menu spawning and update of its content.
+/// Class that handles popup spawning and updates its content.
 /// </summary>
 public class Popup : MonoBehaviour
 {
@@ -57,13 +55,27 @@ public class Popup : MonoBehaviour
         PrimaryButtonText.text = primaryButtonText;
         SecondaryButtonText.text = secondaryButtonText;
         PrimaryButton.onClick.AddListener(primaryCallback);
-        SecondaryButton.onClick.AddListener(primaryCallback);
+        SecondaryButton.onClick.AddListener(secondaryCallback);
 
         gameObject.SetActive(true);
     }
 
+    /// <summary>
+    /// Deactivates the popup.
+    /// </summary>
+    public void DeactivatePopup()
+    {
+        gameObject.SetActive(false);
+    }
+
+    void OnEnable()
+    {
+        Time.timeScale = 0;
+    }
+
     void OnDisable()
     {
+        Time.timeScale = 1;
         PrimaryButton.onClick.RemoveAllListeners();
         SecondaryButton.onClick.RemoveAllListeners();
     }

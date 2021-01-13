@@ -6,6 +6,14 @@
             "id": "45bf48cd-521e-4caf-b7c3-668e332d8736",
             "actions": [
                 {
+                    "name": "Camera_Wiew_Change",
+                    "type": "Button",
+                    "id": "19e59ae9-3f3a-4ac9-a43f-447063ede5a0",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
                     "name": "Camera_Move_WASD",
                     "type": "Value",
                     "id": "71d29146-8ab1-41df-b9b8-68c1283988f7",
@@ -38,39 +46,23 @@
                     "interactions": ""
                 },
                 {
-                    "name": "Camera_Wiew_Change",
-                    "type": "Button",
-                    "id": "19e59ae9-3f3a-4ac9-a43f-447063ede5a0",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "Mouse_Left_Click",
+                    "name": "Select_Element",
                     "type": "Button",
                     "id": "a0b95fdd-b0f7-4d10-a1e7-fb150e7efa49",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "Tap"
                 },
                 {
-                    "name": "Mouse_Right_Click",
+                    "name": "Action",
                     "type": "Button",
                     "id": "895c2167-c390-48ec-911e-47c6529c6e80",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "Tap"
                 },
                 {
-                    "name": "Mouse_Middle_Button",
-                    "type": "Value",
-                    "id": "4f95c7d2-b828-4734-8e11-a4b7e7229d80",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "Santa_Actions_Overwrite",
+                    "name": "Action_Append_Toggle",
                     "type": "Button",
                     "id": "e36bcf88-ca66-476e-965a-1f34d0a12e11",
                     "expectedControlType": "Button",
@@ -78,9 +70,33 @@
                     "interactions": ""
                 },
                 {
-                    "name": "Santa_Action_Mode_Change",
+                    "name": "Move_Action_Enable",
                     "type": "Button",
                     "id": "2f4e80c8-f77d-4181-99f2-35c6069ab444",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Change_Y_Offset_Move_Action",
+                    "type": "Value",
+                    "id": "4f95c7d2-b828-4734-8e11-a4b7e7229d80",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Show_Control_Info_Panel",
+                    "type": "Button",
+                    "id": "ed3ccc09-47e1-42f5-b949-14f8cc564067",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Pause_Game",
+                    "type": "Button",
+                    "id": "e44b196e-65d9-4595-b68f-0209cbb0a623",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
@@ -200,7 +216,7 @@
                 {
                     "name": "",
                     "id": "d5d81a4b-7695-485a-a363-b86859fb666d",
-                    "path": "<Mouse>/rightButton",
+                    "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -226,7 +242,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Mouse_Left_Click",
+                    "action": "Select_Element",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -237,7 +253,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Mouse_Right_Click",
+                    "action": "Action",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -248,40 +264,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Mouse_Middle_Button",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "66bccb60-a138-40a2-8d7f-21355ea9cb1f",
-                    "path": "<Keyboard>/shift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Santa_Action_Mode_Change",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "d194bff3-78ed-49b6-bbe3-57ea71735049",
-                    "path": "<Keyboard>/space",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Camera_Wiew_Change",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "f16e7a99-5e07-4070-b0df-f47696b51f7a",
-                    "path": "<Keyboard>/ctrl",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Santa_Actions_Overwrite",
+                    "action": "Change_Y_Offset_Move_Action",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -339,6 +322,61 @@
                     "action": "Camera_Move_QE",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "66bccb60-a138-40a2-8d7f-21355ea9cb1f",
+                    "path": "<Keyboard>/z",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move_Action_Enable",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f16e7a99-5e07-4070-b0df-f47696b51f7a",
+                    "path": "<Keyboard>/ctrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Action_Append_Toggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d194bff3-78ed-49b6-bbe3-57ea71735049",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Camera_Wiew_Change",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "58cbf750-f1bf-4e81-ae12-f240ddc13341",
+                    "path": "<Keyboard>/alt",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Show_Control_Info_Panel",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bde8b1a9-b408-44e2-be90-cd29d400499e",
+                    "path": "<Keyboard>/p",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pause_Game",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

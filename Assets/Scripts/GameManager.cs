@@ -1,21 +1,29 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Class that manages the initialization of the game and game flow.
+/// </summary>
 public class GameManager : MonoBehaviour
 {
+    [Tooltip("The area in which the Santas will be spawned randomly.")]
     public Collider SantasSpawnArea;
+    [Tooltip("The area in which the Befanas will be spawned randomly.")]
     public Collider BefanasSpawnArea;
+    [Tooltip("The area in which the gifts will be spawned and in which it is possible to move the camera in free mode.")]
     public Collider PlaygroundArea;
 
-    public GameObject EndGamePopup;
-
+    [Tooltip("Reference the Transform containing all the houses in the game. Used for initializing random houses from the map.")]
     public Transform HousesParent;
 
+    [Tooltip("Reference to the popup GameObject.")]
+    public GameObject EndGamePopup;
+
     private int _giftsToDeliverCounter;
-    private int _remainingSantasCounter;
+    private int _santasCounter;
     private float _timeLeft;
 
     public float MinHeight { get; set; }
@@ -50,14 +58,15 @@ public class GameManager : MonoBehaviour
 
         // Selection of random houses from the map.
         System.Random rnd = new System.Random();
-        List<House> selectedHouses = HousesParent.GetComponentsInChildren<House>()
+        List<House> allHouses = HousesParent.GetComponentsInChildren<House>().ToList();
+        List<House> selectedHouses = allHouses
             .OrderBy(_ => rnd.Next())
             .Take(LoadSettings.Instance.SelectedLevel.NumberOfHouses)
             .ToList();
 
-        foreach (House house in selectedHouses)
+        foreach (House house in allHouses.Except(selectedHouses))
         {
-            house.enabled = true;
+            Destroy(house);
         }
 
         // Spawn the Santas inside their spawn area.
@@ -97,25 +106,23 @@ public class GameManager : MonoBehaviour
             Instantiate(level.BefanaPrefab, randomPosition, level.BefanaPrefab.transform.rotation);
         }
 
-        // Spawn the gifts inside their spawn area.
-        Vector3 giftsSpawnAreaOrigin = PlaygroundArea.bounds.center;
-        float giftsSpawnAreaMinX = giftsSpawnAreaOrigin.x - PlaygroundArea.bounds.extents.x;
-        float giftsSpawnAreaMaxX = giftsSpawnAreaOrigin.x + PlaygroundArea.bounds.extents.x;
-        float giftsSpawnAreaMinY = giftsSpawnAreaOrigin.y - PlaygroundArea.bounds.extents.y;
-        float giftsSpawnAreaMaxY = giftsSpawnAreaOrigin.y + PlaygroundArea.bounds.extents.y;
-        float giftsSpawnAreaMinZ = giftsSpawnAreaOrigin.z - PlaygroundArea.bounds.extents.z;
-        float giftsSpawnAreaMaxZ = giftsSpawnAreaOrigin.z + PlaygroundArea.bounds.extents.z;
+        // Calculate the play area boundaries.
+        Vector3 PlayGroundAreaOrigin = PlaygroundArea.bounds.center;
+        MaxRangeXZ = PlayGroundAreaOrigin.x + PlaygroundArea.bounds.extents.x;
+        MinHeight = PlayGroundAreaOrigin.y - PlaygroundArea.bounds.extents.y;
+        MaxHeight = PlayGroundAreaOrigin.y + PlaygroundArea.bounds.extents.y;
 
+        // Spawn the gifts inside the play area area.
         List<Gift> instantiatedGifts = new List<Gift>();
         for (int i = 0; i < level.NumberOfGifts; i++)
         {
-            Vector3 randomPosition = new Vector3(Random.Range(giftsSpawnAreaMinX, giftsSpawnAreaMaxX),
-                Random.Range(giftsSpawnAreaMinY, giftsSpawnAreaMaxY),
-                Random.Range(giftsSpawnAreaMinZ, giftsSpawnAreaMaxZ));
+            Vector3 randomPosition = new Vector3(Random.Range(-MaxRangeXZ, MaxRangeXZ),
+                Random.Range(MinHeight, MaxHeight),
+                Random.Range(-MaxRangeXZ, MaxRangeXZ));
 
             Gift gift = Instantiate(level.GiftPrefab, randomPosition, level.GiftPrefab.transform.rotation).GetComponent<Gift>();
             instantiatedGifts.Add(gift);
-            gift.Id = $"{ i + 1 }";
+            gift.Id = $"Gift { i + 1 }";
         }
 
         // Assign each gift to one house.
@@ -126,59 +133,83 @@ public class GameManager : MonoBehaviour
             currentHouse.RequestedGifts.Add(instantiatedGifts[i]);
         }
 
-        // Calculate the play area boundaries.
-        Vector3 PlayGroundAreaOrigin = PlaygroundArea.bounds.center;
-        MaxRangeXZ = PlayGroundAreaOrigin.x + PlaygroundArea.bounds.extents.x;
-        MinHeight = PlayGroundAreaOrigin.y - PlaygroundArea.bounds.extents.y;
-        MaxHeight = PlayGroundAreaOrigin.y + PlaygroundArea.bounds.extents.y;
-
         // Initialize the other settings of the level.
         _timeLeft = level.Time;
         _giftsToDeliverCounter = level.GiftsToDeliver;
+        _santasCounter = level.NumberOfSantas;
     }
 
     void Update()
     {
         _timeLeft -= Time.deltaTime;
+        // Time out.
         if (_timeLeft < 0)
         {
+            // Reset the timer, so that we don't enter the if condition multiple times.
+            _timeLeft = 0;
+
             Popup.Instance.ActivatePopup(
                 message: "Oh no! Time's out!",
                 secondaryButtonEnabled: true,
                 primaryButtonText: "Menu",
                 secondaryButtonText: "Try again",
                 primaryCallback: () => SceneManager.LoadScene("MenuScene"),
-                secondaryCallback: () => SceneManager.LoadScene("GameScene")); 
+                secondaryCallback: () => SceneManager.LoadScene("GameScene"));
         }
     }
 
-    public void DecreaseGiftsCounter(int deliveredGifts) 
+    /// <summary>
+    /// Decrease the number of gifts to deliver when a santa has performed a delivery action.
+    /// If there are no more gifts to deliver, terminates the level.
+    /// </summary>
+    public void DecreaseGiftsCounter(int deliveredGifts)
     {
         _giftsToDeliverCounter -= deliveredGifts;
         GameInfoPanel.Instance.UpdateGifts(_giftsToDeliverCounter);
         if (_giftsToDeliverCounter == 0)
         {
             Popup.Instance.ActivatePopup(
-                message: "Congratulations! You helped the santas to deliver all the gifts!",
+                message: "Congratulations! All the gifts have been delivered!",
                 primaryButtonText: "Menu",
                 primaryCallback: () => SceneManager.LoadScene("MenuScene"));
         }
     }
 
+    /// <summary>
+    /// Decrease by one the number of active Santas when one of them gets chased by a Befana.
+    /// If no more active santas exist, terminates the game.
+    /// </summary>
     public void DecreaseSantasCounter()
     {
-        _remainingSantasCounter--;
-        if (_remainingSantasCounter == 0)
+        _santasCounter--;
+        GameInfoPanel.Instance.UpdateSantas(_santasCounter);
+        if (_santasCounter == 0)
         {
             Popup.Instance.ActivatePopup(
-                message: "Oh no! All the Santas have been chased by the Befanas!", 
+                message: "Oh no! All the Santas have been chased by the Befanas!",
                 secondaryButtonEnabled: true,
                 primaryButtonText: "Menu",
                 secondaryButtonText: "Try again",
                 primaryCallback: () => SceneManager.LoadScene("MenuScene"),
-                secondaryCallback: () => SceneManager.LoadScene("MenuScene"));
+                secondaryCallback: () => SceneManager.LoadScene("GameScene"));
         }
     }
 
-    
+    /// <summary>
+    /// Pauses the game by showing the popup.
+    /// </summary>
+    /// <param name="context"></param>
+    public void OnPauseGame(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            Popup.Instance.ActivatePopup(
+                message: "Game paused",
+                secondaryButtonEnabled: true,
+                primaryButtonText: "Menu",
+                secondaryButtonText: "Continue",
+                primaryCallback: () => SceneManager.LoadScene("MenuScene"),
+                secondaryCallback: () => Popup.Instance.DeactivatePopup());
+        }
+    }
 }

@@ -1,8 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// Handles the free view camera.
+/// </summary>
 public class CameraFreeController : MonoBehaviour
 {
     [Header("Configurable Properties")]
@@ -33,6 +34,11 @@ public class CameraFreeController : MonoBehaviour
     {
         // Set the move target position based on the move direction. Must be done here as there's no logic for the input system to calculate holding down an input
         _moveTarget += (transform.forward * _moveDirection.z + transform.up * _moveDirection.y + transform.right * _moveDirection.x) * Time.deltaTime * MoveSpeed;
+
+        // Clamp x,y,z values of _moveTarget so that the camera doesn't exceed the boundaries.
+        _moveTarget.x = Mathf.Clamp(_moveTarget.x, -GameManager.Instance.MaxRangeXZ - 5f, GameManager.Instance.MaxRangeXZ + 5f);
+        _moveTarget.y = Mathf.Clamp(_moveTarget.y, GameManager.Instance.MinHeight, GameManager.Instance.MaxHeight + 5f);
+        _moveTarget.z = Mathf.Clamp(_moveTarget.z, -GameManager.Instance.MaxRangeXZ - 5f, GameManager.Instance.MaxRangeXZ + 5f);
 
         // Lerp the camera rig to a new move target position
         transform.position = Vector3.Lerp(transform.position, _moveTarget, Time.deltaTime * InternalMoveSpeed);

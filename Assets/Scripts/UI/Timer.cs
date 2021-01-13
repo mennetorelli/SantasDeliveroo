@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 public class Timer : MonoBehaviour
@@ -13,7 +11,6 @@ public class Timer : MonoBehaviour
 
     private void Awake()
     {
-        gameObject.SetActive(false);
         _text = TimerText.text;
     }
 
@@ -22,21 +19,22 @@ public class Timer : MonoBehaviour
         if (_counting)
         {
             _timeLeft -= Time.deltaTime;
-            TimerText.text = $"{ _text } { _timeLeft:0} " ;
+            TimerText.text = $"{ _text } { _timeLeft:0} ";
             if (_timeLeft < 0)
             {
                 _counting = false;
-                gameObject.SetActive(false);
             }
         }
-        
+
     }
 
+    /// <summary>
+    /// Starts the timer.
+    /// </summary>
+    /// <param name="timer">The value of the timer.</param>
     public void StartTimer(float timer)
     {
         _timeLeft = timer;
-        gameObject.SetActive(true);
         _counting = true;
     }
-
 }

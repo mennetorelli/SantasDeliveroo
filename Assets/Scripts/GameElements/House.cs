@@ -4,17 +4,18 @@ using UnityEngine;
 
 public class House : SelectableElementBase
 {
+    [Tooltip("The possible colors of this house.")]
     public List<Color> Colors;
-    public Material DisabledMaterial;
+    [Tooltip("Reference to the renderer where the colored material is applied.")]
     public Renderer ColoredRenderer;
-    
+    [Tooltip("The material of an inactive house.")]
+    public Material DisabledMaterial;
+
+    // When a house is inactive, all the renderers of the object have the DisabledMaterial.
     private List<Renderer> _renderers;
 
     public List<Gift> RequestedGifts { get; set; }
     public string HouseAddress { get; set; }
-    public bool Highlight { get; set; }
-
-    private List<Renderer> _houseRenderers;
 
     void Awake()
     {
@@ -26,69 +27,54 @@ public class House : SelectableElementBase
             .Select(s => s[Random.Range(0, s.Length)]).ToArray());
         HouseAddress = $"No. {Random.Range(0, 100)} {randomStr} Street";
 
-        _houseRenderers = GetComponentsInChildren<Renderer>().ToList();
-    }
-
-    void Start()
-    {
-        gameObject.layer = 10;
-    }
-
-    void Update()
-    {
-        if (Highlight)
-        {
-            float lerp = Mathf.PingPong(Time.time, 1.5f) / 1.5f;
-            foreach (Renderer renderer in _houseRenderers)
-            {
-                renderer.material.Lerp(renderer.material, renderer.material, lerp);
-            }
-        }
+        // Assignment of random color to the material.
+        ColoredRenderer.material.color = Colors[Random.Range(0, Colors.Count - 1)];
     }
 
     void OnTriggerEnter(Collider other)
     {
         Santa currentSanta = other.GetComponent<Santa>();
+        // If the colliding Santa is aiming to deliver at this house, i.e. it is not an accidental collision.
         if (currentSanta != null && currentSanta.NextTarget == gameObject)
         {
             List<Gift> deliverableGifts = currentSanta.CollectedGifts.Intersect(RequestedGifts).ToList();
             if (deliverableGifts.Count > 0)
             {
                 currentSanta.CollectedGifts.RemoveAll(x => deliverableGifts.Contains(x));
-                currentSanta.UpdateSpeed();
                 RequestedGifts.RemoveAll(x => deliverableGifts.Contains(x));
+
+                currentSanta.UpdateSpeed();
+                Highlight.SetActive(false);
                 ElementDetailsPanel.Instance.UpdatePanel();
                 GameManager.Instance.DecreaseGiftsCounter(deliverableGifts.Count);
-                MessagePanel.Instance.ShowMessage($"Ho ho ho! {deliverableGifts.Count} delivered to { HouseAddress }", Color.black);
+                MessagePanel.Instance.ShowMessage($"Ho ho ho! {string.Join(", ", deliverableGifts.Select(el => el.Id))} delivered to { HouseAddress }", Color.black);
+
+                // Each delivered gift is no more collected by a Santa.
+                foreach (Gift gift in deliverableGifts)
+                {
+                    gift.CollectedBySanta = null;
+                }
+
+                // If no more gifts are requested, disable this house.
+                if (RequestedGifts.Count == 0)
+                {
+                    Destroy(this);
+                }
             }
             else
             {
-                MessagePanel.Instance.ShowMessage($"Nothing in the sleigh matches the requested gifts", Color.red);
+                MessagePanel.Instance.ShowMessage($"No gift in the sleigh matches the gifts requested by this house", Color.red);
             }
         }
     }
 
-    public override List<string> FormatDetails()
+    void OnDestroy()
     {
-        List<string> elementProperties = new List<string>()
-        {
-             $"House owner: { HouseAddress }"
-        };
-        foreach (Gift gift in RequestedGifts)
-        {
-            elementProperties.Add($"Requested gift: { gift.Id }");
-        }
-        return elementProperties;
-    }
+        // The house is no more selectable.
+        Destroy(GetComponent<Collider>());
+        gameObject.layer = LayerMask.GetMask("Default");
 
-    void OnEnable()
-    {
-        // Assignment of random color to the material.
-        ColoredRenderer.material.color = Colors[Random.Range(0, Colors.Count - 1)];
-    }
 
-    void OnDisable()
-    {
         // Setting the house material to a grayish material.
         foreach (Renderer renderer in _renderers)
         {
@@ -96,13 +82,44 @@ public class House : SelectableElementBase
         }
     }
 
-    public override void Selected()
+    public override List<string> FormatProperties()
     {
-        Debug.Log("Nothing to override");
+        return new List<string>()
+        {
+             $"Address: { HouseAddress }",
+             $"Requested gifts: {string.Join(", ", RequestedGifts.Select(el => el.Id))}"
+        };
     }
 
-    public override void Deselected()
+    public override void OnSelect()
     {
-        Debug.Log("Nothing to override");
+        base.OnSelect();
+        foreach (Gift gift in RequestedGifts)
+        {
+            if (gift.CollectedBySanta != null)
+            {
+                gift.CollectedBySanta.Highlight.SetActive(true);
+            }
+            else
+            {
+                gift.Highlight.SetActive(true);
+            }
+        }
+    }
+
+    public override void OnDeselect()
+    {
+        base.OnDeselect();
+        foreach (Gift gift in RequestedGifts)
+        {
+            if (gift.CollectedBySanta != null)
+            {
+                gift.CollectedBySanta.Highlight.SetActive(false);
+            }
+            else
+            {
+                gift.Highlight.SetActive(false);
+            }
+        }
     }
 }

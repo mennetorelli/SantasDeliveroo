@@ -1,8 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Manages the bottom-right panel with the details of the selected element.
+/// </summary>
 public class ElementDetailsPanel : MonoBehaviour
 {
     [Header("Element panel properties")]
@@ -10,8 +11,8 @@ public class ElementDetailsPanel : MonoBehaviour
     public Transform ElementDetailsContainer;
     public Transform IconTransform;
 
-    [Tooltip("MouseInputManagerReference. Needed to keep track of the selected element.")]
-    public MouseInputController MouseInputManager;
+    [Tooltip("Input manager reference. Needed to keep track of the selected element.")]
+    public InteractionManager InputManager;
 
     private Image _icon;
 
@@ -37,21 +38,30 @@ public class ElementDetailsPanel : MonoBehaviour
         }
     }
 
-
+    /// <summary>
+    /// Show the element details panel and updates its content.
+    /// </summary>
     public void ShowPanel()
     {
         gameObject.SetActive(true);
         UpdatePanel();
     }
 
+    /// <summary>
+    /// If the panel is active, updates its content.
+    /// </summary>
     public void UpdatePanel()
     {
         if (gameObject.activeSelf)
         {
+            // If the panel is active, then there is an object selected.
+            // Update the UI of the object selected.
+            InputManager.SelectedElement.OnSelect();
+
             ResetPanel();
 
-            _icon.sprite = MouseInputManager.SelectedElement.Icon;
-            foreach (var item in MouseInputManager.SelectedElement.FormatDetails())
+            _icon.sprite = InputManager.SelectedElement.Icon;
+            foreach (var item in InputManager.SelectedElement.FormatProperties())
             {
                 GameObject component = Instantiate(ElementDetailsPrefab, ElementDetailsContainer.transform);
                 component.GetComponent<ElementDetailsFiller>().Fill(item);
@@ -59,12 +69,18 @@ public class ElementDetailsPanel : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Resets and hides the element details panel.
+    /// </summary>
     public void HidePanel()
     {
         ResetPanel();
         gameObject.SetActive(false);
     }
 
+    /// <summary>
+    /// Clears the content of the element details panel.
+    /// </summary>
     void ResetPanel()
     {
         for (int i = 0; i < ElementDetailsContainer.childCount; i++)
