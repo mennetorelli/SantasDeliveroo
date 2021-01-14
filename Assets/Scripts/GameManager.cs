@@ -32,6 +32,8 @@ public class GameManager : MonoBehaviour
 
     public float TimeLeft { get; set; }
 
+    public bool IsPaused { get; set; }
+
     public static GameManager Instance
     {
         get;
@@ -184,7 +186,7 @@ public class GameManager : MonoBehaviour
                 message: "Game paused",
                 secondaryButtonEnabled: true,
                 primaryButtonText: "Menu",
-                secondaryButtonText: "Continue",
+                secondaryButtonText: "Resume",
                 primaryCallback: () => SceneManager.LoadScene("MenuScene"),
                 secondaryCallback: () => Popup.Instance.DeactivatePopup());
         }

@@ -21,7 +21,7 @@ MonoBehaviour:
   SantasMinSpeed: 2
   SantasMaxSpeed: 4
   NumberOfBefanas: 3
-  BefanasMinSpeed: 1
+  BefanasMinSpeed: 2
   BefanasMaxSpeed: 4
   BefanasMinActionDuration: 2
   BefanasMaxActionDuration: 4

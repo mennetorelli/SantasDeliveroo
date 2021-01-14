@@ -70,11 +70,13 @@ public class Popup : MonoBehaviour
 
     void OnEnable()
     {
+        GameManager.Instance.IsPaused = true;
         Time.timeScale = 0;
     }
 
     void OnDisable()
     {
+        GameManager.Instance.IsPaused = false;
         Time.timeScale = 1;
         PrimaryButton.onClick.RemoveAllListeners();
         SecondaryButton.onClick.RemoveAllListeners();

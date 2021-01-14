@@ -25,7 +25,7 @@ MonoBehaviour:
   BefanasMaxSpeed: 4
   BefanasMinActionDuration: 2
   BefanasMaxActionDuration: 4
-  BefanasMinDetectionRange: 2
+  BefanasMinDetectionRange: 3
   BefanasMaxDetectionRange: 5
   SantaPrefab: {fileID: 5151170794676270279, guid: 939408041fc4075479daed63e89873a3, type: 3}
   BefanaPrefab: {fileID: 5155714823862478468, guid: 7fe6ddd872653cc459dfe04ca193913d, type: 3}

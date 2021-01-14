@@ -36,4 +36,12 @@ public class LoadSettings : MonoBehaviour
         SelectedLevel = level;
         SceneManager.LoadScene("GameScene");
     }
+
+    /// <summary>
+    /// Quits the application.
+    /// </summary>
+    public void QuitApplication()
+    {
+        Application.Quit();
+    }
 }

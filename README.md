@@ -64,14 +64,14 @@ e notifica il `GameManager` e gli elementi della UI.
 ## Input Manager
 
 Per realizzare il progetto è stato utilizzato il nuovo Input System di Unity.
-Le classi che gestiscono l'input dell'utente sono InputManager.cs
+Le classi che gestiscono l'input dell'utente sono `InputManager.cs`
 e i controller delle due camere.
 `InputManager.cs` gestisce tutta l'interazione necessaria per selezionare oggetti
 e svolgere azioni con i Babbi Natale.
 `InputManager` mantiene un riferimento dell'elemento selezionato,
 in modo tale da controllare, per esempio, se è stato selezionato correttamente un Babbo Natale
 prima di eseguire un'azione.
-I due controller delle camere gestiscono ovviamente la loro posizione/rotazione
+I controller delle due camere gestiscono la loro posizione/rotazione
 all'interno dell'area di gioco.
 
 ## UI
@@ -96,7 +96,7 @@ a seconda della configurazione del livello.
 
 Ci sono diverse aree sulla mappa entro le quali vengono generati casualmente gli oggetti:
 le Befane vengono generate nella loro apposita area, così come i Babbi Natale,
-mentre i regali sono generati randomicamente su tutta l'area di gioco.
+mentre i regali sono generati casualmente su tutta l'area di gioco.
 
 In ogni configurazione è possibile impostare diversi parametri, come:
 
@@ -108,7 +108,7 @@ In ogni configurazione è possibile impostare diversi parametri, come:
 - velocità dei Babbi Natale
 - velocità delle Befane
 - raggio di azione delle befane
-- durata delle azioni delle befane (cioè quando una Begana non insegue un Babbo Natale,
+- durata delle azioni delle befane (cioè quando una Befana non insegue un Babbo Natale,
   questa si muove in modo random sulla mappa, e ogni tot secondi cambia direzione.)
 
 Chiaramente, il settaggio di questi parametri influenza la difficoltà del livello: ad esempio,
@@ -129,7 +129,7 @@ Il gioco prevede due modalità, una chiamata free view e una tactical view.
 
 Sebbene nelle specifiche sia indicato solo che nella tactical view
 si possano eseguire azioni e selezionare oggetti,
-è stata lasciata la possibilità di selezinoare gli oggetti anche in free view,
+è stata lasciata la possibilità di selezionare gli oggetti anche in free view,
 tuttavia non di svolgere le azioni tramite i Babbi Natale.
 
 Nella tactical mode, tuttavia, è stata prevista la possibilità di due ulteriori movimenti

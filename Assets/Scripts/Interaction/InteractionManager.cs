@@ -74,7 +74,7 @@ public class InteractionManager : MonoBehaviour
     /// <param name="context">Holds context information of the state of the Action and the values of the controls.</param>
     public void OnSelectElement(InputAction.CallbackContext context)
     {
-        if (context.performed && Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Santa", "Befana", "Target")))
+        if (context.performed && Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Santa", "Befana", "Target")) && !GameManager.Instance.IsPaused)
         {
             SelectableElementBase selectedElement = hit.transform.GetComponent<SelectableElementBase>();
             Debug.Log(selectedElement);
@@ -117,7 +117,7 @@ public class InteractionManager : MonoBehaviour
     public void OnAction(InputAction.CallbackContext context)
     {
         // Tactical mode must be enabled and a Santa must have been selected to perform the action.
-        if (_tacticalModeEnabled && context.performed && SelectedElement != null && SelectedElement.GetType() == typeof(Santa))
+        if (_tacticalModeEnabled && context.performed && SelectedElement != null && SelectedElement.GetType() == typeof(Santa) && !GameManager.Instance.IsPaused)
         {
             Santa selectedSanta = (Santa)SelectedElement;
             // Move mode enabled.

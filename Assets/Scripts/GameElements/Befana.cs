@@ -35,7 +35,10 @@ public class Befana : SelectableElementBase
         {
             Highlight.SetActive(true);
 
-            transform.rotation = Quaternion.LookRotation(_detectedSanta.transform.position);
+            Quaternion rotation = Quaternion.LookRotation(_detectedSanta.transform.position - transform.position);
+            rotation.x = 0f;
+            transform.rotation = rotation;
+
             transform.position = Vector3.MoveTowards(transform.position, _detectedSanta.transform.position, _speed * Time.deltaTime);
 
             // If the Befana has come quite near the Santa, deactivate both of them.
@@ -53,7 +56,10 @@ public class Befana : SelectableElementBase
         {
             Highlight.SetActive(false);
 
-            transform.rotation = Quaternion.LookRotation(_randomPosition);
+            Quaternion rotation = Quaternion.LookRotation(_randomPosition - transform.position);
+            rotation.x = 0f;
+            transform.rotation = rotation;
+
             transform.position = Vector3.MoveTowards(transform.position, _randomPosition, _speed * Time.deltaTime);
         }
     }

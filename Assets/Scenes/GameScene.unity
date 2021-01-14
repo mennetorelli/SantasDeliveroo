@@ -4118,11 +4118,12 @@ MonoBehaviour:
   m_text: "<b>Spacebar</b>: switch camera mode\n\n<b>Free mode:</b>\n<b>WASD</b>:
     move around\n<b>QE</b>: change height\n<b>Right click + mouse movement</b>: rotate
     camera\n\n<b>Tactical mode:</b>\n<b>AD</b>: Rotate camera around y-axis\n<b>WS</b>:
-    Change camera height\n\n<b>Left click</b>: select object\n\n<b>Santa's actions:</b>\n<b>Shift</b>:
-    change action mode\nWhen collect/deliver action mode enabled:\n<b>Right click</b>:
-    perform collect/deliver action\nWhen move action mode is enabled:\n<b>Mouse scroll:</b>
-    change offset on y-axis\n<b>Right click</b>: Go to higlighted position\n \n<b>I</b>:
-    enable/disable controls legend\n<b>Alt</b>: Pause game"
+    Change camera height\n\n<b>Left click</b>: select object\n\n<b>Santa's actions</b>
+    (tactical mode only):\n<b>Shift</b>: change action mode\nWhen collect/deliver
+    action mode enabled:\n<b>Right click</b>: perform collect/deliver action\nWhen
+    move action mode is enabled:\n<b>Mouse scroll:</b> change offset on y-axis\n<b>Right
+    click</b>: Go to higlighted position\n \n<b>I</b>: enable/disable controls legend\n<b>Alt</b>:
+    Pause game"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -5666,7 +5667,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97399a36e72d24842ac386610d42e9cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RotationSpeed: 16
+  RotationSpeed: 24
   MoveSpeed: 8
 --- !u!1001 &1750701690
 PrefabInstance:
