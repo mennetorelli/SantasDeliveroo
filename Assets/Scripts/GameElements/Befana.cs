@@ -9,9 +9,9 @@ public class Befana : SelectableElementBase
 
     private int _speed;
     private int _actionDuration;
-    private int _maxDistance = 10;
+    private readonly int _maxDistance = 10;
 
-    private Transform _detectedSanta;
+    private Santa _detectedSanta;
     private Vector3 _randomPosition;
 
     void Awake()
@@ -30,18 +30,19 @@ public class Befana : SelectableElementBase
     // Update is called once per frame
     void Update()
     {
-        if (_detectedSanta != null)
+        // if there is a detected santa which is not already chased by other befanas.
+        if (_detectedSanta != null && _detectedSanta.IsChasedBy == this)
         {
             Highlight.SetActive(true);
 
-            transform.rotation = Quaternion.LookRotation(_detectedSanta.position);
-            transform.position = Vector3.MoveTowards(transform.position, _detectedSanta.position, _speed * Time.deltaTime);
+            transform.rotation = Quaternion.LookRotation(_detectedSanta.transform.position);
+            transform.position = Vector3.MoveTowards(transform.position, _detectedSanta.transform.position, _speed * Time.deltaTime);
 
             // If the Befana has come quite near the Santa, deactivate both of them.
             // Used this instead of a OnTriggerEnter to not interfere with the collider of the detection range
-            if (Vector3.Distance(transform.position, _detectedSanta.position) < 0.5f)
+            if (Vector3.Distance(transform.position, _detectedSanta.transform.position) < 0.5f)
             {
-                StartCoroutine(_detectedSanta.GetComponent<Santa>().Deactivate());
+                StartCoroutine(_detectedSanta.Deactivate());
                 StartCoroutine(Deactivate());
 
                 // Set _detectedSanta = null to not enter again in the if condition and avoid starting again the coroutines.
@@ -63,11 +64,11 @@ public class Befana : SelectableElementBase
     void UpdateRandomPosition()
     {
         _randomPosition = new Vector3(
-                Mathf.Clamp(UnityEngine.Random.Range(transform.position.x - _maxDistance, transform.position.x + _maxDistance),
+                Mathf.Clamp(Random.Range(transform.position.x - _maxDistance, transform.position.x + _maxDistance),
                     -GameManager.Instance.MaxRangeXZ, GameManager.Instance.MaxRangeXZ),
-                Mathf.Clamp(UnityEngine.Random.Range(transform.position.y - _maxDistance, transform.position.y + _maxDistance),
+                Mathf.Clamp(Random.Range(transform.position.y - _maxDistance, transform.position.y + _maxDistance),
                     GameManager.Instance.MinHeight, GameManager.Instance.MaxHeight),
-                Mathf.Clamp(UnityEngine.Random.Range(transform.position.z - _maxDistance, transform.position.z + _maxDistance),
+                Mathf.Clamp(Random.Range(transform.position.z - _maxDistance, transform.position.z + _maxDistance),
                     -GameManager.Instance.MaxRangeXZ, GameManager.Instance.MaxRangeXZ));
     }
 
@@ -75,7 +76,13 @@ public class Befana : SelectableElementBase
     {
         if (_detectedSanta == null)
         {
-            _detectedSanta = other.transform;
+            _detectedSanta = other.GetComponent<Santa>();
+
+            // If the detected Santa is not chased by any Befana, now it's followed by this Befana.
+            if (_detectedSanta.IsChasedBy == null)
+            {
+                _detectedSanta.IsChasedBy = this;
+            }
         }
     }
 
@@ -83,24 +90,31 @@ public class Befana : SelectableElementBase
     {
         if (other.transform == _detectedSanta)
         {
+            _detectedSanta.IsChasedBy = null;
             _detectedSanta = null;
         }
     }
 
-    public IEnumerator Deactivate()
+    /// <summary>
+    /// Smoothly scales the object, then deactivates it.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
+    IEnumerator Deactivate()
     {
-        float ratio = 0;
+        float step = 0;
         float duration = 1f;
         float startTime = Time.time;
         Vector3 initialScaleValue = transform.localScale;
-        while (ratio < 1)
+        while (step < 1)
         {
-            // update the ratio value at every frame
-            ratio = (Time.time - startTime) / duration;
-            // apply the new scale
-            transform.localScale = Vector3.Lerp(initialScaleValue, Vector3.zero, ratio);
+            // update the ratio value at every frame.
+            step = (Time.time - startTime) / duration;
+            // apply the new scale.
+            transform.localScale = Vector3.Lerp(initialScaleValue, Vector3.zero, step);
             yield return new WaitForEndOfFrame();
         }
+
+        OnDeselect();
         gameObject.SetActive(false);
     }
 

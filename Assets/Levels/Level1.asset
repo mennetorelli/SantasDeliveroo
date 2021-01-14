@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Id: 1
   NumberOfHouses: 5
-  NumberOfGifts: 20
+  NumberOfGifts: 25
   GiftsToDeliver: 5
-  Time: 180
+  Time: 250
   NumberOfSantas: 4
-  SantasMinSpeed: 1
-  SantasMaxSpeed: 3
+  SantasMinSpeed: 2
+  SantasMaxSpeed: 4
   NumberOfBefanas: 2
   BefanasMinSpeed: 1
   BefanasMaxSpeed: 3

@@ -13,20 +13,20 @@ MonoBehaviour:
   m_Name: Level6
   m_EditorClassIdentifier: 
   Id: 6
-  NumberOfHouses: 5
+  NumberOfHouses: 8
   NumberOfGifts: 20
+  GiftsToDeliver: 12
+  Time: 180
   NumberOfSantas: 2
-  SantasMinSpeed: 1
-  SantasMaxSpeed: 3
-  NumberOfBefanas: 4
-  BefanasMinSpeed: 1
+  SantasMinSpeed: 2
+  SantasMaxSpeed: 4
+  NumberOfBefanas: 3
+  BefanasMinSpeed: 2
   BefanasMaxSpeed: 4
   BefanasMinActionDuration: 2
   BefanasMaxActionDuration: 4
-  BefanasMinDetectionRange: 4
-  BefanasMaxDetectionRange: 6
-  GiftsToDeliver: 10
-  Time: 180
+  BefanasMinDetectionRange: 3
+  BefanasMaxDetectionRange: 5
   SantaPrefab: {fileID: 5151170794676270279, guid: 939408041fc4075479daed63e89873a3, type: 3}
   BefanaPrefab: {fileID: 5155714823862478468, guid: 7fe6ddd872653cc459dfe04ca193913d, type: 3}
   GiftPrefab: {fileID: 4337478193464926883, guid: 5547acfcb3f51bf4aa0ad8bb0155ce66, type: 3}

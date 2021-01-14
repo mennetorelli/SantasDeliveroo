@@ -23,14 +23,14 @@ public class GameManager : MonoBehaviour
     public GameObject EndGamePopup;
 
     private int _giftsToDeliverCounter;
-    private int _santasCounter;
-    private float _timeLeft;
+    private List<SelectableElementBase> _remainingSantas;
+    
+    // Public properties as shorthands of play area boundaries.
+    public float MinHeight { get => PlaygroundArea.bounds.center.y - PlaygroundArea.bounds.extents.y; }
+    public float MaxHeight { get => PlaygroundArea.bounds.center.y + PlaygroundArea.bounds.extents.y; }
+    public float MaxRangeXZ { get => PlaygroundArea.bounds.center.x + PlaygroundArea.bounds.extents.x; }
 
-    public float MinHeight { get; set; }
-    public float MaxHeight { get; set; }
-    public float MaxRangeXZ { get; set; }
-
-    public List<Santa> AvailableSantas { get; set; }
+    public float TimeLeft { get; set; }
 
     public static GameManager Instance
     {
@@ -56,6 +56,13 @@ public class GameManager : MonoBehaviour
     {
         LevelConfiguration level = LoadSettings.Instance.SelectedLevel;
 
+        // Spawn the Santas inside their spawn area, and reference them.
+        // This list is needed in case two Befanas have chased the same Santa.
+        _remainingSantas = SpawnObjects(level.SantaPrefab, level.NumberOfSantas, SantasSpawnArea);
+
+        // Spawn the Befanas inside their spawn area.
+        SpawnObjects(level.BefanaPrefab, level.NumberOfBefanas, BefanasSpawnArea);
+
         // Selection of random houses from the map.
         System.Random rnd = new System.Random();
         List<House> allHouses = HousesParent.GetComponentsInChildren<House>().ToList();
@@ -69,84 +76,54 @@ public class GameManager : MonoBehaviour
             Destroy(house);
         }
 
-        // Spawn the Santas inside their spawn area.
-        Vector3 santasSpawnAreaOrigin = SantasSpawnArea.bounds.center;
-        float santasSpawnAreaMinX = santasSpawnAreaOrigin.x - SantasSpawnArea.bounds.extents.x;
-        float santasSpawnAreaMaxX = santasSpawnAreaOrigin.x + SantasSpawnArea.bounds.extents.x;
-        float santasSpawnAreaMinY = santasSpawnAreaOrigin.y - SantasSpawnArea.bounds.extents.y;
-        float santasSpawnAreaMaxY = santasSpawnAreaOrigin.y + SantasSpawnArea.bounds.extents.y;
-        float santasSpawnAreaMinZ = santasSpawnAreaOrigin.z - SantasSpawnArea.bounds.extents.z;
-        float santasSpawnAreaMaxZ = santasSpawnAreaOrigin.z + SantasSpawnArea.bounds.extents.z;
-
-        AvailableSantas = new List<Santa>();
-        for (int i = 0; i < level.NumberOfSantas; i++)
-        {
-            Vector3 randomPosition = new Vector3(Random.Range(santasSpawnAreaMinX, santasSpawnAreaMaxX),
-                Random.Range(santasSpawnAreaMinY, santasSpawnAreaMaxY),
-                Random.Range(santasSpawnAreaMinZ, santasSpawnAreaMaxZ));
-
-            AvailableSantas.Add(Instantiate(level.SantaPrefab, randomPosition, level.SantaPrefab.transform.rotation).GetComponent<Santa>());
-        }
-
-        // Spawn the Befanas inside their spawn area.
-        Vector3 befanasSpawnAreaOrigin = BefanasSpawnArea.bounds.center;
-        float befanasSpawnAreaMinX = befanasSpawnAreaOrigin.x - BefanasSpawnArea.bounds.extents.x;
-        float befanasSpawnAreaMaxX = befanasSpawnAreaOrigin.x + BefanasSpawnArea.bounds.extents.x;
-        float befanasSpawnAreaMinY = befanasSpawnAreaOrigin.y - BefanasSpawnArea.bounds.extents.y;
-        float befanasSpawnAreaMaxY = befanasSpawnAreaOrigin.y + BefanasSpawnArea.bounds.extents.y;
-        float befanasSpawnAreaMinZ = befanasSpawnAreaOrigin.z - BefanasSpawnArea.bounds.extents.z;
-        float befanasSpawnAreaMaxZ = befanasSpawnAreaOrigin.z + BefanasSpawnArea.bounds.extents.z;
-
-        for (int i = 0; i < level.NumberOfBefanas; i++)
-        {
-            Vector3 randomPosition = new Vector3(Random.Range(befanasSpawnAreaMinX, befanasSpawnAreaMaxX),
-                Random.Range(befanasSpawnAreaMinY, befanasSpawnAreaMaxY),
-                Random.Range(befanasSpawnAreaMinZ, befanasSpawnAreaMaxZ));
-
-            Instantiate(level.BefanaPrefab, randomPosition, level.BefanaPrefab.transform.rotation);
-        }
-
-        // Calculate the play area boundaries.
-        Vector3 PlayGroundAreaOrigin = PlaygroundArea.bounds.center;
-        MaxRangeXZ = PlayGroundAreaOrigin.x + PlaygroundArea.bounds.extents.x;
-        MinHeight = PlayGroundAreaOrigin.y - PlaygroundArea.bounds.extents.y;
-        MaxHeight = PlayGroundAreaOrigin.y + PlaygroundArea.bounds.extents.y;
-
-        // Spawn the gifts inside the play area area.
-        List<Gift> instantiatedGifts = new List<Gift>();
-        for (int i = 0; i < level.NumberOfGifts; i++)
-        {
-            Vector3 randomPosition = new Vector3(Random.Range(-MaxRangeXZ, MaxRangeXZ),
-                Random.Range(MinHeight, MaxHeight),
-                Random.Range(-MaxRangeXZ, MaxRangeXZ));
-
-            Gift gift = Instantiate(level.GiftPrefab, randomPosition, level.GiftPrefab.transform.rotation).GetComponent<Gift>();
-            instantiatedGifts.Add(gift);
-            gift.Id = $"Gift { i + 1 }";
-        }
+        // Spawn the gifts inside the play area area, and reference them.
+        List<SelectableElementBase> instantiatedGifts = SpawnObjects(level.GiftPrefab, level.NumberOfGifts, PlaygroundArea);
 
         // Assign each gift to one house.
         for (int i = 0; i < instantiatedGifts.Count; i++)
         {
+            Gift gift = (Gift)instantiatedGifts[i];
+            gift.Id = $"Gift { i + 1 }";
             House currentHouse = selectedHouses[i % selectedHouses.Count];
-            instantiatedGifts[i].DestinationHouse = currentHouse;
-            currentHouse.RequestedGifts.Add(instantiatedGifts[i]);
+            gift.DestinationHouse = currentHouse;
+            currentHouse.RequestedGifts.Add(gift);
         }
 
-        // Initialize the other settings of the level.
-        _timeLeft = level.Time;
+        // Initialize the other properties of the level.
+        TimeLeft = level.Time;
         _giftsToDeliverCounter = level.GiftsToDeliver;
-        _santasCounter = level.NumberOfSantas;
+    }
+
+    /// <summary>
+    /// Spawn a category of objects inside an area.
+    /// </summary>
+    /// <param name="ObjectToSpawn">The prefab of the object to spawn.</param>
+    /// <param name="numberOfObjects">The number of objects to spawn.</param>
+    /// <param name="area">The area in which to spawn the objects.</param>
+    /// <returns>The list of instantiated objects.</returns>
+    List<SelectableElementBase> SpawnObjects(GameObject ObjectToSpawn, int numberOfObjects, Collider area)
+    {
+        List<SelectableElementBase> instantiatedObjects = new List<SelectableElementBase>();
+        for (int i = 0; i < numberOfObjects; i++)
+        {
+            Vector3 randomPosition = new Vector3(
+                Random.Range(area.bounds.center.x - area.bounds.size.x / 2, area.bounds.center.x + area.bounds.size.x / 2),
+                Random.Range(area.bounds.center.y - area.bounds.size.y / 2, area.bounds.center.y + area.bounds.size.y / 2),
+                Random.Range(area.bounds.center.z - area.bounds.size.z / 2, area.bounds.center.z + area.bounds.size.z / 2));
+
+            instantiatedObjects.Add(Instantiate(ObjectToSpawn, randomPosition, ObjectToSpawn.transform.rotation).GetComponent<SelectableElementBase>());
+        }
+        return instantiatedObjects;
     }
 
     void Update()
     {
-        _timeLeft -= Time.deltaTime;
+        TimeLeft -= Time.deltaTime;
         // Time out.
-        if (_timeLeft < 0)
+        if (TimeLeft < 0)
         {
             // Reset the timer, so that we don't enter the if condition multiple times.
-            _timeLeft = 0;
+            TimeLeft = 0;
 
             Popup.Instance.ActivatePopup(
                 message: "Oh no! Time's out!",
@@ -179,11 +156,11 @@ public class GameManager : MonoBehaviour
     /// Decrease by one the number of active Santas when one of them gets chased by a Befana.
     /// If no more active santas exist, terminates the game.
     /// </summary>
-    public void DecreaseSantasCounter()
+    public void RemoveSanta(Santa santaToRemove)
     {
-        _santasCounter--;
-        GameInfoPanel.Instance.UpdateSantas(_santasCounter);
-        if (_santasCounter == 0)
+        _remainingSantas.Remove(santaToRemove);
+        GameInfoPanel.Instance.UpdateSantas(_remainingSantas.Count);
+        if (_remainingSantas.Count == 0)
         {
             Popup.Instance.ActivatePopup(
                 message: "Oh no! All the Santas have been chased by the Befanas!",

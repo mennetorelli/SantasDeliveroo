@@ -16,18 +16,15 @@ public class LoadSettings : MonoBehaviour
 
     private void Awake()
     {
-        // Singleton implementation.
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
+            Destroy(Instance.gameObject);
         }
-        else
-        {
-            Instance = this;
 
-            // Persistency among scenes.
-            DontDestroyOnLoad(this);
-        }
+        Instance = this;
+
+        // Persistency among scenes.
+        DontDestroyOnLoad(this);
     }
 
     /// <summary>

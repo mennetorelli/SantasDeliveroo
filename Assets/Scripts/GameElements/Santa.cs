@@ -11,8 +11,8 @@ public class Santa : SelectableElementBase
     [Tooltip("The visual feedback that represents the path of actions.")]
     public GameObject PathVisualFeedback;
 
-    // Actions are stores in a queue of pairs <santa's destination, action>.
-    private readonly List<KeyValuePair<Vector3, UnityAction>> _actionsQueue = new List<KeyValuePair<Vector3, UnityAction>>();
+    // Actions are stored in a list of pairs <santa's destination, action>.
+    private readonly List<KeyValuePair<Vector3, UnityAction>> _actionsList = new List<KeyValuePair<Vector3, UnityAction>>();
     // The visual representation of the path as a sequence of GameObjects containing line renderers.
     private readonly List<GameObject> _path = new List<GameObject>();
 
@@ -21,10 +21,10 @@ public class Santa : SelectableElementBase
 
     private bool _isExecuting;
 
-    public GameObject NextTarget { get; set; }
+    public GameObject TargetElement { get; set; }
     public List<Gift> CollectedGifts { get; set; }
-    public Vector3 Origin { get => _actionsQueue.Count > 0 ? _actionsQueue[_actionsQueue.Count - 1].Key : (_path.Count > 0 ? _path[0].transform.position : transform.position); }
-
+    public Befana IsChasedBy { get; set; }
+   
     void Awake()
     {
         _initialSpeed = Random.Range(LoadSettings.Instance.SelectedLevel.SantasMinSpeed, LoadSettings.Instance.SelectedLevel.SantasMaxSpeed);
@@ -36,10 +36,10 @@ public class Santa : SelectableElementBase
     void Update()
     {
         // If there are actions in the list, take the first and execute it.
-        if (!_isExecuting && _actionsQueue.Count > 0)
+        if (!_isExecuting && _actionsList.Count > 0)
         {
             _isExecuting = true;
-            _actionsQueue[0].Value.Invoke();
+            _actionsList[0].Value.Invoke();
         }
     }
 
@@ -47,9 +47,9 @@ public class Santa : SelectableElementBase
     {
         // If there is a queue of actions and the user has not pressed ctrl, clear the queue 
         // (except the first action, which is in execution and will be removed at completion).
-        if (!appendAction && _actionsQueue.Count > 0)
+        if (!appendAction && _actionsList.Count > 0)
         {
-            _actionsQueue.RemoveRange(1, _actionsQueue.Count - 1);
+            _actionsList.RemoveRange(1, _actionsList.Count - 1);
             for (int i = 0; i < _path.Count - 1; i++)
             {
                 Destroy(_path[i + 1]);
@@ -58,7 +58,7 @@ public class Santa : SelectableElementBase
         }
 
         // Add the action in the queue.
-        _actionsQueue.Add(new KeyValuePair<Vector3, UnityAction>(destination, action));
+        _actionsList.Add(new KeyValuePair<Vector3, UnityAction>(destination, action));
 
         Vector3 origin = GetStartingPoint(appendAction);
 
@@ -106,31 +106,31 @@ public class Santa : SelectableElementBase
     }
 
     /// <summary>
-    /// Represents an action: move Santa from one point to another and, if it is a collect or deliver action, 
-    /// store a referent of the current target object.
+    /// Represents an action: move Santa from one point to another and, if it is a collect/deliver action, 
+    /// store a reference of the current target object.
     /// </summary>
-    /// <param name="target">The target object, if the action is a collect or deliver one.</param>
-    public void ExecuteAction(GameObject target = null)
+    /// <param name="targetElement">The target object, if the action is a collect or deliver one.</param>
+    public void ExecuteAction(GameObject targetElement = null)
     {
         // Saves a reference of the target object for collect/deliver actions,
         // to check if santa collides with the right object during the execution.
-        NextTarget = target;
+        TargetElement = targetElement;
 
         // Update the color of the current step in the path according to the presence of a target object
         // (collect/deliver action) or not (move action).
         foreach (Renderer step in _path[0].transform.GetComponentsInChildren<Renderer>())
         {
-            step.material.color = target != null ? Color.cyan : Color.green;
+            step.material.color = targetElement != null ? Color.cyan : Color.green;
         }
 
         // Santa looks in the direction of the target position.
-        Vector3 lookDirection = _actionsQueue[0].Key - transform.position;
+        Vector3 lookDirection = _actionsList[0].Key - transform.position;
         Quaternion rotation = Quaternion.LookRotation(lookDirection);
         rotation.x = 0f;
         transform.rotation = rotation;
 
         // Start moving Santa.
-        StartCoroutine(MoveSanta(transform.position, _actionsQueue[0].Key));
+        StartCoroutine(MoveSanta(transform.position, _actionsList[0].Key));
     }
 
     /// <summary>
@@ -155,10 +155,23 @@ public class Santa : SelectableElementBase
         transform.position = destination;
 
         // The action is completed, remove it from the list and destroy the visual feedback of the step.
-        _actionsQueue.Remove(_actionsQueue[0]);
+        _actionsList.Remove(_actionsList[0]);
         Destroy(_path[0]);
         _path.Remove(_path[0]);
         _isExecuting = false;
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        // If the colliding object is a target object and corresponds to the target of the action
+        // (i.e. it's not an unintentional collision).
+        if (other.GetComponent<ITarget>() != null && other.gameObject == TargetElement)
+        {
+            other.GetComponent<ITarget>().TargetReached(this);
+
+            //To avoid repeating the triggering of the target reached method.
+            TargetElement = null;
+        }
     }
 
     /// <summary>
@@ -167,6 +180,14 @@ public class Santa : SelectableElementBase
     /// <returns>IEnumerator.</returns>
     public IEnumerator Deactivate()
     {
+        OnDeselect();
+        MessagePanel.Instance.ShowMessage("A Santa has been chased by a Befana!", Color.red);
+        if (InteractionManager.Instance.SelectedElement == this)
+        {
+            ElementDetailsPanel.Instance.HidePanel();
+            InteractionManager.Instance.SelectedElement = null;
+        }
+        
         float step = 0;
         float duration = 1f;
         float startTime = Time.time;
@@ -186,7 +207,7 @@ public class Santa : SelectableElementBase
             gift.CollectedBySanta = null;
         }
 
-        GameManager.Instance.DecreaseSantasCounter();
+        GameManager.Instance.RemoveSanta(this);
         gameObject.SetActive(false);
     }
 

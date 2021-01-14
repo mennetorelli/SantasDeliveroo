@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEngine;
 
-public class House : SelectableElementBase
+public class House : SelectableElementBase, ITarget
 {
     [Tooltip("The possible colors of this house.")]
     public List<Color> Colors;
@@ -31,40 +31,35 @@ public class House : SelectableElementBase
         ColoredRenderer.material.color = Colors[Random.Range(0, Colors.Count - 1)];
     }
 
-    void OnTriggerEnter(Collider other)
+    public void TargetReached(Santa santa)
     {
-        Santa currentSanta = other.GetComponent<Santa>();
-        // If the colliding Santa is aiming to deliver at this house, i.e. it is not an accidental collision.
-        if (currentSanta != null && currentSanta.NextTarget == gameObject)
+        List<Gift> deliverableGifts = santa.CollectedGifts.Intersect(RequestedGifts).ToList();
+        if (deliverableGifts.Count > 0)
         {
-            List<Gift> deliverableGifts = currentSanta.CollectedGifts.Intersect(RequestedGifts).ToList();
-            if (deliverableGifts.Count > 0)
+            santa.CollectedGifts.RemoveAll(x => deliverableGifts.Contains(x));
+            RequestedGifts.RemoveAll(x => deliverableGifts.Contains(x));
+
+            santa.UpdateSpeed();
+            Highlight.SetActive(false);
+            ElementDetailsPanel.Instance.UpdatePanel();
+            GameManager.Instance.DecreaseGiftsCounter(deliverableGifts.Count);
+            MessagePanel.Instance.ShowMessage($"Ho ho ho! {string.Join(", ", deliverableGifts.Select(el => el.Id))} delivered to { HouseAddress }", Color.black);
+
+            // Each delivered gift is no more collected by a Santa.
+            foreach (Gift gift in deliverableGifts)
             {
-                currentSanta.CollectedGifts.RemoveAll(x => deliverableGifts.Contains(x));
-                RequestedGifts.RemoveAll(x => deliverableGifts.Contains(x));
-
-                currentSanta.UpdateSpeed();
-                Highlight.SetActive(false);
-                ElementDetailsPanel.Instance.UpdatePanel();
-                GameManager.Instance.DecreaseGiftsCounter(deliverableGifts.Count);
-                MessagePanel.Instance.ShowMessage($"Ho ho ho! {string.Join(", ", deliverableGifts.Select(el => el.Id))} delivered to { HouseAddress }", Color.black);
-
-                // Each delivered gift is no more collected by a Santa.
-                foreach (Gift gift in deliverableGifts)
-                {
-                    gift.CollectedBySanta = null;
-                }
-
-                // If no more gifts are requested, disable this house.
-                if (RequestedGifts.Count == 0)
-                {
-                    Destroy(this);
-                }
+                gift.CollectedBySanta = null;
             }
-            else
+
+            // If no more gifts are requested, disable this house.
+            if (RequestedGifts.Count == 0)
             {
-                MessagePanel.Instance.ShowMessage($"No gift in the sleigh matches the gifts requested by this house", Color.red);
+                Destroy(this);
             }
+        }
+        else
+        {
+            MessagePanel.Instance.ShowMessage($"No gifts in the sleigh match the gifts requested by this house", Color.red);
         }
     }
 

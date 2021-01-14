@@ -16,8 +16,28 @@ public class InteractionManager : MonoBehaviour
     private bool _appendActionInQueue;
     private bool _moveActionEnabled;
     private float _yOffset;
+    private bool _tacticalModeEnabled;
 
     public SelectableElementBase SelectedElement { get; set; }
+
+    public static InteractionManager Instance
+    {
+        get;
+        private set;
+    }
+
+    void Awake()
+    {
+        // Singleton implementation.
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     void Update()
     {
@@ -63,6 +83,9 @@ public class InteractionManager : MonoBehaviour
             // save a reference of the selected element and update the element details panel.
             if (selectedElement != SelectedElement)
             {
+                // A different Santa can be selected, so reset the offset on the y-axis.
+                _yOffset = 0;
+
                 // If the user has selected a different element, the previous one is no longer selected.
                 if (SelectedElement != null)
                 {
@@ -93,8 +116,8 @@ public class InteractionManager : MonoBehaviour
     /// <param name="context">Holds context information of the state of the Action and the values of the controls.</param>
     public void OnAction(InputAction.CallbackContext context)
     {
-        // A Santa must have been selected to perform the action.
-        if (context.performed && SelectedElement != null && SelectedElement.GetType() == typeof(Santa))
+        // Tactical mode must be enabled and a Santa must have been selected to perform the action.
+        if (_tacticalModeEnabled && context.performed && SelectedElement != null && SelectedElement.GetType() == typeof(Santa))
         {
             Santa selectedSanta = (Santa)SelectedElement;
             // Move mode enabled.
@@ -141,7 +164,7 @@ public class InteractionManager : MonoBehaviour
     /// <param name="context">Holds context information of the state of the Action and the values of the controls.</param>
     public void OnMoveActionEnabled(InputAction.CallbackContext context)
     {
-        _moveActionEnabled = !_moveActionEnabled;
+        _moveActionEnabled = !_moveActionEnabled && _tacticalModeEnabled;
         // Reset the offset on the y-axis.
         _yOffset = 0;
     }
@@ -155,5 +178,17 @@ public class InteractionManager : MonoBehaviour
         _yOffset = Mathf.Clamp(_yOffset + context.ReadValue<Vector2>().normalized.y / 10,
             GameManager.Instance.MinHeight - RayIntersectorPlane.transform.position.y,
             GameManager.Instance.MaxHeight - RayIntersectorPlane.transform.position.y);
+    }
+
+    /// <summary>
+    /// Triggers when the user changes the camera mode from free to tactical and vice versa.
+    /// </summary>
+    /// <param name="context">Holds context information of the state of the Action and the values of the controls.</param>
+    public void OnCameraViewChange(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            _tacticalModeEnabled = !_tacticalModeEnabled;
+        }
     }
 }

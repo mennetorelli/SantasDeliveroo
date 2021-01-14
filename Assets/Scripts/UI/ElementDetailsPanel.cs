@@ -11,8 +11,8 @@ public class ElementDetailsPanel : MonoBehaviour
     public Transform ElementDetailsContainer;
     public Transform IconTransform;
 
-    [Tooltip("Input manager reference. Needed to keep track of the selected element.")]
-    public InteractionManager InputManager;
+    //[Tooltip("Input manager reference. Needed to keep track of the selected element.")]
+    //public InteractionManager InputManager;
 
     private Image _icon;
 
@@ -54,14 +54,16 @@ public class ElementDetailsPanel : MonoBehaviour
     {
         if (gameObject.activeSelf)
         {
-            // If the panel is active, then there is an object selected.
-            // Update the UI of the object selected.
-            InputManager.SelectedElement.OnSelect();
+            // Update the UI of the object selected, if it exists.
+            if (InteractionManager.Instance.SelectedElement != null)
+            {
+                InteractionManager.Instance.SelectedElement.OnSelect();
+            }
 
             ResetPanel();
 
-            _icon.sprite = InputManager.SelectedElement.Icon;
-            foreach (var item in InputManager.SelectedElement.FormatProperties())
+            _icon.sprite = InteractionManager.Instance.SelectedElement.Icon;
+            foreach (var item in InteractionManager.Instance.SelectedElement.FormatProperties())
             {
                 GameObject component = Instantiate(ElementDetailsPrefab, ElementDetailsContainer.transform);
                 component.GetComponent<ElementDetailsFiller>().Fill(item);

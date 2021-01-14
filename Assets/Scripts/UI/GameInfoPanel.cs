@@ -9,8 +9,8 @@ public class GameInfoPanel : MonoBehaviour
 {
     [Tooltip("Reference to the label containing the level.")]
     public TextMeshProUGUI Level;
-    [Tooltip("Reference to the timer that is displayed in the label indicating the time left.")]
-    public Timer Timer;
+    [Tooltip("Reference to to the label containing the time left.")]
+    public TextMeshProUGUI Timer;
     [Tooltip("Reference to the label containing the number of gifts to deliver.")]
     public TextMeshProUGUI Gifts;
     [Tooltip("Reference to the label containing the number of remaining santas.")]
@@ -21,6 +21,7 @@ public class GameInfoPanel : MonoBehaviour
     public GameObject ControlsInfoPanel;
 
     private string _giftsText;
+    private string _timerText;
     private string _cameraModeText;
     private string _santasText;
     private bool _controlsInfoPanelActive;
@@ -44,11 +45,16 @@ public class GameInfoPanel : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        Timer.text = $"{ _timerText } { GameManager.Instance.TimeLeft:0} ";
+    }
+
     // Start is called before the first frame update
     void Start()
     {
         Level.text = $"{ Level.text } { LoadSettings.Instance.SelectedLevel.Id }";
-        Timer.StartTimer(LoadSettings.Instance.SelectedLevel.Time);
+        _timerText = Timer.text;
         _giftsText = Gifts.text;
         _santasText = Santas.text;
         _cameraModeText = CameraMode.text;

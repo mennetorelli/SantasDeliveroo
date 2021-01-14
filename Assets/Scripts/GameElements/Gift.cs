@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Gift : SelectableElementBase
+public class Gift : SelectableElementBase, ITarget
 {
     public List<Color> Colors;
 
@@ -23,28 +23,30 @@ public class Gift : SelectableElementBase
             .Select(s => s[Random.Range(0, s.Length)]).ToArray());
     }
 
-    void OnTriggerEnter(Collider other)
+    public void TargetReached(Santa santa)
     {
-        Santa currentSanta = other.GetComponent<Santa>();
-        // If the colliding Santa is aiming to collect this gift, i.e. it is not an accidental collision.
-        if (currentSanta != null && currentSanta.NextTarget == gameObject)
+        // To avoid two santa collecting the gift simultaneously.
+        GetComponent<Collider>().enabled = false;
+
+        if (santa.CollectedGifts.Count < santa.SleighCapacity)
         {
-            if (currentSanta.CollectedGifts.Count < currentSanta.SleighCapacity)
-            {
-                CollectedBySanta = currentSanta;
-                currentSanta.CollectedGifts.Add(this);
-                currentSanta.UpdateSpeed();
-                StartCoroutine(Deactivate());
-                ElementDetailsPanel.Instance.UpdatePanel();
-                MessagePanel.Instance.ShowMessage($"Gift collected! Gift's destination: {DestinationHouse.HouseAddress}", Color.black);
-            }
-            else
-            {
-                MessagePanel.Instance.ShowMessage("Sleigh full! Deliver some gifts before collecting another one.", Color.red);
-            }
+            CollectedBySanta = santa;
+            santa.CollectedGifts.Add(this);
+            santa.UpdateSpeed();
+            StartCoroutine(Deactivate());
+            ElementDetailsPanel.Instance.UpdatePanel();
+            MessagePanel.Instance.ShowMessage($"Gift collected! Gift's destination: {DestinationHouse.HouseAddress}", Color.black);
+        }
+        else
+        {
+            MessagePanel.Instance.ShowMessage("Sleigh full! Deliver some gifts before collecting another one.", Color.red);
         }
     }
 
+    /// <summary>
+    /// Smoothly scales the object, then deactivates it.
+    /// </summary>
+    /// <returns>IEnumerator.</returns>
     public IEnumerator Deactivate()
     {
         float ratio = 0;

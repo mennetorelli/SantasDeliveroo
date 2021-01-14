@@ -20,10 +20,9 @@ public class CameraModeSwitcher : MonoBehaviour
     [Tooltip("Image for tactical mode camera.")]
     public RawImage TacticalModeFadeImage;
     [Tooltip("Fade duration.")]
-    public float FadeDuration = 0.2f;
+    public float FadeDuration = 0.15f;
 
-    // The current camera mode. False if free camera mode, true if tactical camera mode.
-    private bool _cameraMode;
+    private bool _tacticalMode;
 
     void Awake()
     {
@@ -35,14 +34,14 @@ public class CameraModeSwitcher : MonoBehaviour
     }
 
     /// <summary>
-    /// Changes the camera mode from free to tactical and vice versa.
+    /// Triggers when the user changes the camera mode from free to tactical and vice versa.
     /// </summary>
-    /// <param name="context"></param>
-    public void CameraViewChange(InputAction.CallbackContext context)
+    /// <param name="context">Holds context information of the state of the Action and the values of the controls.</param>
+    public void OnCameraViewChange(InputAction.CallbackContext context)
     {
         if (context.performed)
         {
-            _cameraMode = !_cameraMode;
+            _tacticalMode = !_tacticalMode;
             StartCoroutine(Fade());
         }
     }
@@ -50,8 +49,9 @@ public class CameraModeSwitcher : MonoBehaviour
     IEnumerator Fade()
     {
         // If we have changed to free mode.
-        if (!_cameraMode)
+        if (!_tacticalMode)
         {
+            // Fade out and wait for the completion before switching the camera.
             TacticalModeFadeImage.CrossFadeAlpha(1, FadeDuration, false);
             yield return new WaitForSeconds(FadeDuration);
 
@@ -59,11 +59,13 @@ public class CameraModeSwitcher : MonoBehaviour
             FreeMode.gameObject.SetActive(true);
             TacticalMode.gameObject.SetActive(false);
 
+            // Fade in.
             FreeModeFadeImage.CrossFadeAlpha(0, FadeDuration, false);
         }
         // If we have changed to tactical mode.
         else
         {
+            // Fade out and wait for the completion before switching the camera.
             FreeModeFadeImage.CrossFadeAlpha(1, FadeDuration, false);
             yield return new WaitForSeconds(FadeDuration);
 
@@ -71,9 +73,10 @@ public class CameraModeSwitcher : MonoBehaviour
             TacticalMode.gameObject.SetActive(true);
             FreeMode.gameObject.SetActive(false);
 
+            // Fade in.
             TacticalModeFadeImage.CrossFadeAlpha(0, FadeDuration, false);
         }
 
-        GameInfoPanel.Instance.UpdateCameraMode(_cameraMode);
+        GameInfoPanel.Instance.UpdateCameraMode(_tacticalMode);
     }
 }
