@@ -15,6 +15,14 @@ public abstract class SelectableElementBase : MonoBehaviour
     [Tooltip("If this collider is specified and the object is a target object, the Santa will move to the center of the collider area when performing an action.")]
     public Collider DestinationArea;
 
+    protected virtual void Awake()
+    {
+        if (DestinationArea == null)
+        {
+            DestinationArea = GetComponent<Collider>();
+        }
+    }
+
     /// <summary>
     /// Triggers when the user selects the element with a right-click.
     /// </summary>

@@ -22,17 +22,24 @@ public class GameManager : MonoBehaviour
     [Tooltip("Reference to the popup GameObject.")]
     public GameObject EndGamePopup;
 
-    private int _giftsToDeliverCounter;
-    private List<SelectableElementBase> _remainingSantas;
     
+    private List<SelectableElementBase> _remainingSantas; 
+
     // Public properties as shorthands of play area boundaries.
     public float MinHeight { get => PlaygroundArea.bounds.center.y - PlaygroundArea.bounds.extents.y; }
     public float MaxHeight { get => PlaygroundArea.bounds.center.y + PlaygroundArea.bounds.extents.y; }
     public float MaxRangeXZ { get => PlaygroundArea.bounds.center.x + PlaygroundArea.bounds.extents.x; }
 
+    public int GiftsToDeliverCounter { get; set; }
     public float TimeLeft { get; set; }
 
     public bool IsPaused { get; set; }
+
+
+    public List<SelectableElementBase> GiftsInMap { get; set; }
+    public List<SelectableElementBase> SelectedHouses { get; set; }
+
+    public List<SelectableElementBase> Befanas { get; set; }
 
     public static GameManager Instance
     {
@@ -63,37 +70,37 @@ public class GameManager : MonoBehaviour
         _remainingSantas = SpawnObjects(level.SantaPrefab, level.NumberOfSantas, SantasSpawnArea);
 
         // Spawn the Befanas inside their spawn area.
-        SpawnObjects(level.BefanaPrefab, level.NumberOfBefanas, BefanasSpawnArea);
+        Befanas = SpawnObjects(level.BefanaPrefab, level.NumberOfBefanas, BefanasSpawnArea);
 
         // Selection of random houses from the map.
         System.Random rnd = new System.Random();
-        List<House> allHouses = HousesParent.GetComponentsInChildren<House>().ToList();
-        List<House> selectedHouses = allHouses
+        List<SelectableElementBase> allHouses = HousesParent.GetComponentsInChildren<SelectableElementBase>().ToList();
+        SelectedHouses = allHouses
             .OrderBy(_ => rnd.Next())
             .Take(LoadSettings.Instance.SelectedLevel.NumberOfHouses)
             .ToList();
 
-        foreach (House house in allHouses.Except(selectedHouses))
+        foreach (House house in allHouses.Except(SelectedHouses))
         {
             Destroy(house);
         }
 
         // Spawn the gifts inside the play area area, and reference them.
-        List<SelectableElementBase> instantiatedGifts = SpawnObjects(level.GiftPrefab, level.NumberOfGifts, PlaygroundArea);
+        GiftsInMap = SpawnObjects(level.GiftPrefab, level.NumberOfGifts, PlaygroundArea);
 
         // Assign each gift to one house.
-        for (int i = 0; i < instantiatedGifts.Count; i++)
+        for (int i = 0; i < GiftsInMap.Count; i++)
         {
-            Gift gift = (Gift)instantiatedGifts[i];
+            Gift gift = (Gift)GiftsInMap[i];
             gift.Id = $"Gift { i + 1 }";
-            House currentHouse = selectedHouses[i % selectedHouses.Count];
+            House currentHouse = (House)SelectedHouses[i % SelectedHouses.Count];
             gift.DestinationHouse = currentHouse;
             currentHouse.RequestedGifts.Add(gift);
         }
 
         // Initialize the other properties of the level.
         TimeLeft = level.Time;
-        _giftsToDeliverCounter = level.GiftsToDeliver;
+        GiftsToDeliverCounter = level.GiftsToDeliver;
     }
 
     /// <summary>
@@ -143,9 +150,9 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void DecreaseGiftsCounter(int deliveredGifts)
     {
-        _giftsToDeliverCounter -= deliveredGifts;
-        GameInfoPanel.Instance.UpdateGifts(_giftsToDeliverCounter);
-        if (_giftsToDeliverCounter == 0)
+        GiftsToDeliverCounter -= deliveredGifts;
+        GameInfoPanel.Instance.UpdateGifts(GiftsToDeliverCounter);
+        if (GiftsToDeliverCounter <= 0)
         {
             Popup.Instance.ActivatePopup(
                 message: "Congratulations! All the gifts have been delivered!",

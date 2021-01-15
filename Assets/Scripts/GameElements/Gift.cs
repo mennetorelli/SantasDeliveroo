@@ -13,8 +13,10 @@ public class Gift : SelectableElementBase, ITarget
     public Santa CollectedBySanta { get; set; }
 
 
-    void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         // Assignment of random color to the material.
         transform.GetChild(0).GetComponent<Renderer>().material.color = Colors[Random.Range(0, Colors.Count - 1)];
 
@@ -33,6 +35,7 @@ public class Gift : SelectableElementBase, ITarget
             CollectedBySanta = santa;
             santa.CollectedGifts.Add(this);
             santa.UpdateSpeed();
+            GameManager.Instance.GiftsInMap.Remove(this);
             StartCoroutine(Deactivate());
             ElementDetailsPanel.Instance.UpdatePanel();
             MessagePanel.Instance.ShowMessage($"Gift collected! Gift's destination: {DestinationHouse.HouseAddress}", Color.black);

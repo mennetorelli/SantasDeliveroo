@@ -17,8 +17,10 @@ public class House : SelectableElementBase, ITarget
     public List<Gift> RequestedGifts { get; set; }
     public string HouseAddress { get; set; }
 
-    void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         RequestedGifts = new List<Gift>();
         _renderers = GetComponentsInChildren<Renderer>().ToList();
 

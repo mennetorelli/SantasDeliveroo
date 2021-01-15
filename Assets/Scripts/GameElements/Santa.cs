@@ -21,12 +21,18 @@ public class Santa : SelectableElementBase
 
     private bool _isExecuting;
 
+    private Coroutine _executingAction;
+
     public GameObject TargetElement { get; set; }
     public List<Gift> CollectedGifts { get; set; }
     public Befana IsChasedBy { get; set; }
-   
-    void Awake()
+
+    public bool IsAutomaticMode { get; set; }
+
+    protected override void Awake()
     {
+        base.Awake();
+
         _initialSpeed = Random.Range(LoadSettings.Instance.SelectedLevel.SantasMinSpeed, LoadSettings.Instance.SelectedLevel.SantasMaxSpeed);
         _speed = _initialSpeed;
 
@@ -66,10 +72,19 @@ public class Santa : SelectableElementBase
         GameObject visualFeedback = Instantiate(PathVisualFeedback, destination, Quaternion.identity);
         _path.Add(visualFeedback);
 
+
         // Draw the step.
         PathRenderer visualFeedbackDrawer = visualFeedback.GetComponent<PathRenderer>();
-        visualFeedbackDrawer.DrawPath(origin, destination);
         visualFeedbackDrawer.DrawDestination(destination);
+        visualFeedbackDrawer.DrawPath(appendAction ? origin : transform.position, destination);
+
+        if (!appendAction && _isExecuting)
+        {
+            StopCoroutine(_executingAction);
+
+            // The action is overwritten, remove it from the list and destroy the visual feedback of the step.
+            OnActionCompleted();
+        }
     }
 
     /// <summary>
@@ -87,19 +102,13 @@ public class Santa : SelectableElementBase
         {
             origin = transform.position;
         }
-        // If Santa is executing an action but there are no more actions in queue, 
-        // the starting point is the destination of that action.
-        if (_path.Count == 1)
-        {
-            origin = _path[0].transform.position;
-        }
         // If there are more than one action in queue, 
         // then check whether the user has pressed ctrl (appendAction value), 
         // If appendAction = true, the starting point is the destination of the last action,
         // otherwise the the starting point is the destination of the first action (the one in execution).
-        if (_path.Count > 1)
+        if (_path.Count > 0)
         {
-            origin = appendAction ? _path[_path.Count - 1].transform.position : _path[0].transform.position;
+            origin = appendAction ? _path[_path.Count - 1].transform.position : transform.position;
         }
 
         return origin;
@@ -130,7 +139,7 @@ public class Santa : SelectableElementBase
         transform.rotation = rotation;
 
         // Start moving Santa.
-        StartCoroutine(MoveSanta(transform.position, _actionsList[0].Key));
+        _executingAction = StartCoroutine(MoveSanta(transform.position, _actionsList[0].Key));
     }
 
     /// <summary>
@@ -155,6 +164,14 @@ public class Santa : SelectableElementBase
         transform.position = destination;
 
         // The action is completed, remove it from the list and destroy the visual feedback of the step.
+        OnActionCompleted();
+    }
+
+    /// <summary>
+    /// Removes the first action and the step of the past from the respective lists.
+    /// </summary>
+    void OnActionCompleted()
+    {
         _actionsList.Remove(_actionsList[0]);
         Destroy(_path[0]);
         _path.Remove(_path[0]);
@@ -265,5 +282,113 @@ public class Santa : SelectableElementBase
         {
             gift.DestinationHouse.Highlight.SetActive(false);
         }
+    }
+
+    public void AutomaticMode()
+    {
+        IsAutomaticMode = !IsAutomaticMode;
+
+        if (IsAutomaticMode)
+        {
+            // Deactivate all the befanas.
+            foreach (Befana befana in GameManager.Instance.Befanas)
+            {
+                befana.gameObject.SetActive(false);
+            }
+
+            // Simulate the position of Santa at each step: the starting point is Santa's transform.
+            Vector3 currentPlannedPosition = transform.position;
+
+            // Simulate the gifts present in the map.
+            List<SelectableElementBase> giftsInMap = new List<SelectableElementBase>(GameManager.Instance.GiftsInMap);
+
+            // Simulate the gifts collected at each step.
+            List<Gift> giftsPlannedToCollect = new List<Gift>(CollectedGifts);
+
+            // Simulate the number of gifts to deliver.
+            int plannedGiftsToDeliverCounter = GameManager.Instance.GiftsToDeliverCounter;
+
+            while (giftsInMap.Count > 0 && plannedGiftsToDeliverCounter > 0)
+            {
+                // If Santa hasn't collected any gift, no houses can be target object.
+                if (giftsPlannedToCollect.Count == 0)
+                {
+                    Gift nearestGift = (Gift)SelectNearestarget(giftsInMap, currentPlannedPosition);
+                    currentPlannedPosition = nearestGift.DestinationArea.bounds.center;
+
+                    giftsPlannedToCollect.Add(nearestGift);
+                    giftsInMap.Remove(nearestGift);
+
+                    AddActionToQueue(currentPlannedPosition, () => ExecuteAction(nearestGift.gameObject), true);
+                }
+                // If Santa has collected 5 gifts, only houses can be target objects.
+                else if (giftsPlannedToCollect.Count == SleighCapacity)
+                {
+                    House nearestHouse = (House)SelectNearestarget(giftsPlannedToCollect.Select(el => (SelectableElementBase)el.DestinationHouse).ToList(), currentPlannedPosition);
+
+                    currentPlannedPosition = nearestHouse.DestinationArea.bounds.center;
+
+                    List<Gift> deliverableGifts = Enumerable.Intersect(nearestHouse.RequestedGifts, giftsPlannedToCollect).ToList();
+                    giftsPlannedToCollect = giftsPlannedToCollect.Except(deliverableGifts).ToList();
+
+                    plannedGiftsToDeliverCounter -= (deliverableGifts.Count);
+
+                    AddActionToQueue(currentPlannedPosition, () => ExecuteAction(nearestHouse.gameObject), true);
+                }
+                // If Santa has collected a number of object greater than zero but lesser than 5.
+                else
+                {
+                    // Merge the list of remaining gifts with houses associated to collected gifts.
+                    List<SelectableElementBase> possibleTargets =
+                        giftsPlannedToCollect.Select(el => el.DestinationHouse)
+                        .Concat(giftsInMap)
+                        .ToList();
+
+                    SelectableElementBase nearestObject = SelectNearestarget(possibleTargets, currentPlannedPosition);
+                    currentPlannedPosition = nearestObject.DestinationArea.bounds.center;
+
+                    if (nearestObject.GetType() == typeof(Gift))
+                    {
+                        giftsPlannedToCollect.Add((Gift)nearestObject);
+                        giftsInMap.Remove(nearestObject);
+                    }
+                    if (nearestObject.GetType() == typeof(House))
+                    {
+                        House nearestHouse = (House)nearestObject;
+
+                        List<Gift> deliverableGifts = Enumerable.Intersect(nearestHouse.RequestedGifts, giftsPlannedToCollect).ToList();
+                        giftsPlannedToCollect = giftsPlannedToCollect.Except(deliverableGifts).ToList();
+
+                        plannedGiftsToDeliverCounter -= (deliverableGifts.Count);
+                    }
+
+                    AddActionToQueue(currentPlannedPosition, () => ExecuteAction(nearestObject.gameObject), true);
+                }
+            }
+        }
+        else
+        {
+            // Activates all the befanas.
+            foreach (Befana befana in GameManager.Instance.Befanas)
+            {
+                befana.gameObject.SetActive(true);
+            }
+
+            StopCoroutine(_executingAction);
+
+            // Delete all the actions planned and the path.
+            _actionsList.Clear();
+            foreach (GameObject step in _path)
+            {
+                Destroy(step);
+            }
+            _path.Clear();
+            _isExecuting = false;
+        }
+    }
+
+    SelectableElementBase SelectNearestarget(List<SelectableElementBase> objectList, Vector3 currentPlannedPosition)
+    {
+        return objectList.OrderBy(x => Vector3.Distance(currentPlannedPosition, x.transform.position)).ToList()[0];
     }
 }

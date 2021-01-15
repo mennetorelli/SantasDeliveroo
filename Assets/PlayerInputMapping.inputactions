@@ -100,6 +100,14 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "Enable_Automatic_Move",
+                    "type": "Button",
+                    "id": "cf2c483c-6b1b-4405-8810-843ba527ee83",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -375,6 +383,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Pause_Game",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8a9bb30a-245c-4b37-96d6-ce9077fc3e4d",
+                    "path": "<Keyboard>/z",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Enable_Automatic_Move",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

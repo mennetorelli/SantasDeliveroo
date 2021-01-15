@@ -14,8 +14,10 @@ public class Befana : SelectableElementBase
     private Santa _detectedSanta;
     private Vector3 _randomPosition;
 
-    void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         // Initialize parameters according to level configuration.
         LevelConfiguration selectedLevel = LoadSettings.Instance.SelectedLevel;
         _speed = Random.Range(selectedLevel.BefanasMinSpeed, selectedLevel.BefanasMaxSpeed);

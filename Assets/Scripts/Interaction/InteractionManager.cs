@@ -120,30 +120,33 @@ public class InteractionManager : MonoBehaviour
         if (_tacticalModeEnabled && context.performed && SelectedElement != null && SelectedElement.GetType() == typeof(Santa) && !GameManager.Instance.IsPaused)
         {
             Santa selectedSanta = (Santa)SelectedElement;
-            // Move mode enabled.
-            if (_moveActionEnabled)
+            if (!selectedSanta.IsAutomaticMode)
             {
-                if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("RayIntersectorPlane")))
+                // Move mode enabled.
+                if (_moveActionEnabled)
                 {
-                    // The destination is the point selected on the RayIntersectorPlane (+ the offset on the y-axis).
-                    selectedSanta.AddActionToQueue(new Vector3(hit.point.x, hit.point.y + _yOffset, hit.point.z),
-                        () => selectedSanta.ExecuteAction(), _appendActionInQueue);
-                    // Reset the offset on the y-axis.
-                    _yOffset = 0;
+                    if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("RayIntersectorPlane")))
+                    {
+                        // The destination is the point selected on the RayIntersectorPlane (+ the offset on the y-axis).
+                        selectedSanta.AddActionToQueue(new Vector3(hit.point.x, hit.point.y + _yOffset, hit.point.z),
+                            () => selectedSanta.ExecuteAction(), _appendActionInQueue);
+                        // Reset the offset on the y-axis.
+                        _yOffset = 0;
+                    }
                 }
-            }
-            // Collect/deliver mode enabled.
-            else
-            {
-                if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Target")))
+                // Collect/deliver mode enabled.
+                else
                 {
-                    // If this object has a DestinationArea specified, move to the center of the area, otherwise move to the center of the hit collider.
-                    Vector3 destination = hit.transform.GetComponentInParent<SelectableElementBase>().DestinationArea != null ?
-                        hit.transform.GetComponentInParent<SelectableElementBase>().DestinationArea.bounds.center : hit.collider.bounds.center;
+                    if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Target")))
+                    {
+                        // If this object has a DestinationArea specified, move to the center of the area, otherwise move to the center of the hit collider.
+                        Vector3 destination = hit.transform.GetComponentInParent<SelectableElementBase>().DestinationArea != null ?
+                            hit.transform.GetComponentInParent<SelectableElementBase>().DestinationArea.bounds.center : hit.collider.bounds.center;
 
-                    // The destination is the collider of the target object, send the target object as parameter of ExecuteAction to save its reference.
-                    selectedSanta.AddActionToQueue(destination,
-                        () => selectedSanta.ExecuteAction(hit.collider.gameObject), _appendActionInQueue);
+                        // The destination is the collider of the target object, send the target object as parameter of ExecuteAction to save its reference.
+                        selectedSanta.AddActionToQueue(destination,
+                            () => selectedSanta.ExecuteAction(hit.collider.gameObject), _appendActionInQueue);
+                    }
                 }
             }
         }
@@ -189,6 +192,15 @@ public class InteractionManager : MonoBehaviour
         if (context.performed)
         {
             _tacticalModeEnabled = !_tacticalModeEnabled;
+        }
+    }
+
+    public void OnAutomaticMode(InputAction.CallbackContext context)
+    {
+        if (context.performed && SelectedElement != null && SelectedElement.GetType() == typeof(Santa))
+        {
+            Santa selectedSanta = (Santa)SelectedElement;
+            selectedSanta.AutomaticMode();
         }
     }
 }
